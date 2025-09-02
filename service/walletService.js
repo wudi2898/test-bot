@@ -104,7 +104,7 @@ export class WalletService {
         newOwner: newOwnerWallet, // 新所有者的钱包（写入 payload）
         responseTo: wallet, // 可用你的商户/回执地址
         forwardAmountTon: 0, // 转给新所有者的随附金额（可为 0）
-        // forwardComment: `transfer @${username}`,
+        forwardComment: `transfer @${username}`,
       });
 
       const messages = [
