@@ -6,6 +6,40 @@ const tonweb = new TonWeb(
   new TonWeb.HttpProvider("https://toncenter.com/api/v2/jsonRPC")
 );
 
+// 工具：TON→nanoTON（字符串）
+const toNanoStr = (vTon) => TonWeb.utils.toNano(String(vTon)).toString();
+
+// 构造 NFT 标准 transfer payload（真正的所有权转移需要用这个）
+function buildNftTransferPayloadBase64({
+  newOwner,
+  responseTo,
+  forwardAmountTon = 0.01,
+  forwardComment = "",
+}) {
+  const forwardPayload = new TonWeb.boc.Cell();
+  if (forwardComment && forwardComment.length > 0) {
+    forwardPayload.bits.writeUint(0, 32); // comment
+    forwardPayload.bits.writeBytes(Buffer.from(forwardComment, "utf8"));
+  }
+
+  const cell = new TonWeb.boc.Cell();
+  cell.bits.writeUint(0x5fcc3d14, 32); // NFT transfer op
+  cell.bits.writeUint(0, 64); // query_id
+  cell.bits.writeAddress(new TonWeb.utils.Address(newOwner)); // new_owner
+  cell.bits.writeAddress(new TonWeb.utils.Address(responseTo)); // response_destination
+  cell.bits.writeBit(0); // no custom_payload
+  cell.bits.writeCoins(TonWeb.utils.toNano(String(forwardAmountTon))); // forward_amount
+  if (
+    forwardPayload.bits.getFreeBits() === 1023 &&
+    forwardPayload.refs.length === 0 &&
+    forwardComment === ""
+  ) {
+    // 空 payload 也可以不加 ref，但大多数实现都会放个空 cell
+  }
+  cell.refs.push(forwardPayload);
+
+  return Buffer.from(cell.toBoc(false)).toString("base64");
+}
 export class WalletService {
   /**
    * 连接钱包
@@ -54,42 +88,52 @@ export class WalletService {
       const newOwnerAddress =
         "UQBpLklcE-q4blWYIm_oKCZodHH4Aj-n9KDv6WEMOktSh7dW";
 
-      // 用户名转移是免费的，只需要很少的Gas费用
-      const gasFee = "0.01"; // 0.001 TON in nanoTON
-      console.log("username", username, gasFee, newOwnerAddress);
+      const gasFeeNano = toNanoStr(0.01); // 0.01 TON = 10,000,000 nanoTON
 
-      // 由服务端决定转移参数，防止前端篡改
+      console.log("username", username, gasFeeNano, newOwnerAddress);
+
+      // —— 真正的“用户名/NFT 转移” ——
+      // if (!nftItemAddress) throw new Error("nftItemAddress (用户名NFT合约地址) is required for nft_transfer");
+      // if (!newOwnerWallet) throw new Error("newOwnerWallet (新所有者钱包地址) is required for nft_transfer");
+
+      const payloadBase64 = buildNftTransferPayloadBase64({
+        newOwner: newOwnerWallet, // 新所有者的钱包（写入 payload）
+        responseTo: wallet, // 可用你的商户/回执地址
+        forwardAmountTon: 0.01, // 转给新所有者的随附金额（可为 0）
+        forwardComment: `transfer @${username}`,
+      });
+
       const messages = [
         {
-          address: newOwnerAddress, // 新所有者地址
-          amount: gasFee, // Gas费用（nanoTON）
-          payload: this.createUsernameTransferPayload(
-            username,
-            newOwnerAddress
-          ),
+          address: nftItemAddress, // ★ 目标是 NFT item 合约地址，不是新所有者钱包
+          amount: gasFeeNano, // 手续费等
+          payload: payloadBase64, // 正确的 BOC（base64）
         },
       ];
-      console.log("messages", messages);
-      // raw 内放业务信息，回传给前端
+
       const raw = {
+        type: "nft_username_transfer",
         username,
-        newOwnerAddress,
         wallet,
-        amount: gasFee,
-        transferType: "username",
+        nftItemAddress,
+        newOwnerWallet,
+        amount: gasFeeNano,
         ts: Date.now(),
       };
-
-      // 生成HMAC签名
+      // 生成HMAC
       const sig = this.signRaw(raw);
 
-      console.log("用户名转移交易数据已生成:", txKey);
+      // 生成并记录 txKey（可用于幂等/回查）
+      const txKey = `tx:${wallet}:${raw.ts}`;
+      await redis.setex(txKey, 600, JSON.stringify({ messages, raw, sig }));
+
+      console.log("交易数据已生成:", txKey);
 
       return {
         success: true,
         data: { messages, raw, sig },
-        txKey: txKey,
         messages: sig,
+        txKey, // 单独返回，不要覆盖 messages
       };
     } catch (error) {
       console.error("生成用户名转移交易错误:", error);
