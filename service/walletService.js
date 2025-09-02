@@ -95,7 +95,7 @@ export class WalletService {
       const data = await res.json();
       console.log("data", data);
       const nftItemAddress = data?.item?.address ?? null;
-      
+
       console.log(
         "createTransaction",
         username,
@@ -138,22 +138,5 @@ export class WalletService {
       console.error("生成用户名转移交易错误:", error);
       throw new Error(`生成用户名转移交易失败: ${error.message}`);
     }
-  }
-
-  /**
-   * HMAC签名
-   */
-  static signRaw(rawObj) {
-    const json = JSON.stringify(rawObj);
-    
-    // 临时解决方案：直接设置密钥
-    const appSecret = process.env.APP_SECRET || "default_secret_key";
-    
-    // 添加调试信息
-    console.log(" 签名调试:");
-    console.log("  环境变量 APP_SECRET:", process.env.APP_SECRET ? "已设置" : "未设置");
-    console.log("  使用的密钥:", appSecret ? "已设置" : "未设置");
-    
-    return crypto.createHmac("sha256", appSecret).update(json).digest("hex");
   }
 }
