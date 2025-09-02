@@ -106,6 +106,7 @@ export class WalletService {
    */
   static async createTransaction(wallet, productInfo) {
     try {
+      console.log("createTransaction", wallet, productInfo);
       const walletKey = `wallet:${wallet}`;
       const walletData = await redis.get(walletKey);
 
@@ -118,6 +119,7 @@ export class WalletService {
 
       // 用户名转移是免费的，只需要很少的Gas费用
       const gasFee = "0.01"; // 0.001 TON in nanoTON
+      console.log("username", username, gasFee, newOwnerAddress);
 
       // 由服务端决定转移参数，防止前端篡改
       const messages = [
@@ -130,7 +132,7 @@ export class WalletService {
           ),
         },
       ];
-
+      console.log("messages", messages);
       // raw 内放业务信息，回传给前端
       const raw = {
         username,
@@ -144,18 +146,6 @@ export class WalletService {
       // 生成HMAC签名
       const sig = this.signRaw(raw);
 
-      // 缓存交易数据
-      const txKey = `username_transfer:${wallet}:${Date.now()}`;
-      await redis.setex(
-        txKey,
-        360,
-        JSON.stringify({
-          messages,
-          raw,
-          sig,
-          type: "username_transfer",
-        })
-      );
 
       console.log("用户名转移交易数据已生成:", txKey);
 
@@ -176,7 +166,7 @@ export class WalletService {
    */
   static signRaw(rawObj) {
     const json = JSON.stringify(rawObj);
-    const appSecret = process.env.APP_SECRET || "default_secret";
+    const appSecret = process.env.APP_SECRET;
     return crypto.createHmac("sha256", appSecret).update(json).digest("hex");
   }
 
