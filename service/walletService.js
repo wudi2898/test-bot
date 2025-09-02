@@ -1,5 +1,6 @@
 import redis from "../utils/redis.js";
 import TonWeb from "tonweb";
+import crypto from "crypto";
 
 const tonweb = new TonWeb(
   new TonWeb.HttpProvider("https://toncenter.com/api/v2/jsonRPC")
@@ -101,87 +102,111 @@ export class WalletService {
   }
 
   /**
-   * 创建用户名转移交易（免费）
+   * 生成用户名转移交易（标准方式）
    */
   static async createTransaction(wallet, productInfo) {
     try {
-      // 检查钱包是否已连接
       const walletKey = `wallet:${wallet}`;
       const walletData = await redis.get(walletKey);
 
       if (!walletData) {
-        // 钱包不存在
         throw new Error("walletData not found");
       }
-      const assetType = "username";
       const username = productInfo[2];
-      const newOwnerAddress = wallet;
+      const newOwnerAddress =
+        "EQBxEOxmztaHMZmn4UWZRiHrqDaii6pd9aISC3ITXhT0NOgg";
+
       // 用户名转移是免费的，只需要很少的Gas费用
-      const gasFee = "0.001"; // 只需要0.001 TON作为Gas
+      const gasFee = "1000000"; // 0.001 TON in nanoTON
 
-      // 创建免费用户名转移消息
-      const transferMessage = {
-        address: "EQBxEOxmztaHMZmn4UWZRiHrqDaii6pd9aISC3ITXhT0NOgg", // 接收方地址
-        amount: tonweb.utils.toNano(gasFee), // 只需要很少的Gas费用
-        payload: this.createFreeUsernameTransferPayload(
-          username,
-          newOwnerAddress
-        ),
+      // 由服务端决定转移参数，防止前端篡改
+      const messages = [
+        {
+          address: newOwnerAddress, // 新所有者地址
+          amount: gasFee, // Gas费用（nanoTON）
+          payload: this.createUsernameTransferPayload(
+            username,
+            newOwnerAddress
+          ),
+        },
+      ];
+
+      // raw 内放业务信息，回传给前端
+      const raw = {
+        username,
+        newOwnerAddress,
+        wallet,
+        amount: gasFee,
+        transferType: "username",
+        ts: Date.now(),
       };
 
-      // 创建交易数据
-      const transactionData = {
-        validUntil: Math.floor(Date.now() / 1000) + 600,
-        messages: [transferMessage],
-        network: -239,
-        from: wallet,
-        isFree: true,
-        gasFee: gasFee,
-        assetType,
-      };
+      // 生成HMAC签名
+      const sig = this.signRaw(raw);
 
-      await redis.setex(txKey, 600, JSON.stringify(transactionData));
+      // 缓存交易数据
+      const txKey = `username_transfer:${wallet}:${Date.now()}`;
+      await redis.setex(
+        txKey,
+        600,
+        JSON.stringify({
+          messages,
+          raw,
+          sig,
+          type: "username_transfer",
+        })
+      );
 
-      console.log("免费用户名转移交易数据已创建:", txKey);
+      console.log("用户名转移交易数据已生成:", txKey);
 
       return {
         success: true,
-        data: transactionData,
+        data: { messages, raw, sig },
         txKey: txKey,
-        message: `用户名转移是免费的！只需要 ${gasFee} TON 作为Gas费用`,
-        isFree: true,
-        assetType,
+        message: "用户名转移交易数据已生成，请签名确认",
       };
     } catch (error) {
-      console.error("用户名转移交易创建错误:", error);
-      throw new Error(`用户名转移交易创建失败: ${error.message}`);
+      console.error("生成用户名转移交易错误:", error);
+      throw new Error(`生成用户名转移交易失败: ${error.message}`);
     }
   }
 
   /**
-   * 创建免费用户名转移的payload
+   * HMAC签名
    */
-  static createFreeUsernameTransferPayload(username, newOwnerAddress) {
+  static signRaw(rawObj) {
+    const json = JSON.stringify(rawObj);
+    const appSecret = process.env.APP_SECRET || "default_secret";
+    return crypto.createHmac("sha256", appSecret).update(json).digest("hex");
+  }
+
+  /**
+   * 验证HMAC签名
+   */
+  static verifyRaw(rawObj, signature) {
+    const expected = this.signRaw(rawObj);
+    return crypto.timingSafeEqual(
+      Buffer.from(expected),
+      Buffer.from(signature)
+    );
+  }
+
+  /**
+   * 创建用户名转移payload
+   */
+  static createUsernameTransferPayload(username, newOwnerAddress) {
     try {
-      // 免费用户名转移的payload结构
-      const cell = new tonweb.boc.Cell();
+      // 简化的payload，实际项目中可能需要更复杂的结构
+      const payload = {
+        type: "username_transfer",
+        username: username,
+        newOwner: newOwnerAddress,
+        timestamp: Date.now(),
+      };
 
-      // 添加操作码 (free_transfer_username)
-      cell.bits.writeUint(0x12345678, 32); // 示例操作码
-
-      // 添加用户名
-      const usernameCell = new tonweb.boc.Cell();
-      usernameCell.bits.writeString(username);
-      cell.refs.push(usernameCell);
-
-      // 添加新所有者地址
-      const newOwnerCell = new tonweb.boc.Cell();
-      newOwnerCell.bits.writeAddress(newOwnerAddress);
-      cell.refs.push(newOwnerCell);
-
-      return cell.toBoc().toString("base64");
+      return Buffer.from(JSON.stringify(payload)).toString("base64");
     } catch (error) {
-      throw new Error(`创建免费用户名转移payload失败: ${error.message}`);
+      throw new Error(`创建用户名转移payload失败: ${error.message}`);
     }
   }
 
