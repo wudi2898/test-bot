@@ -85,12 +85,11 @@ export class WalletService {
         throw new Error("walletData not found");
       }
       const username = productInfo[2];
-      const newOwnerWallet =
-        "UQBpLklcE-q4blWYIm_oKCZodHH4Aj-n9KDv6WEMOktSh7dW";
+      const newOwnerWallet = "UQBpLklcE-q4blWYIm_oKCZodHH4Aj-n9KDv6WEMOktSh7dW";
 
       const gasFeeNano = toNanoStr(0.01); // 0.01 TON = 10,000,000 nanoTON
 
-      console.log("username", username, gasFeeNano, newOwnerAddress);
+      console.log("username", username, gasFeeNano, newOwnerWallet);
 
       // —— 真正的“用户名/NFT 转移” ——
       // if (!nftItemAddress) throw new Error("nftItemAddress (用户名NFT合约地址) is required for nft_transfer");
@@ -159,24 +158,5 @@ export class WalletService {
       Buffer.from(expected),
       Buffer.from(signature)
     );
-  }
-
-  /**
-   * 创建用户名转移payload
-   */
-  static createUsernameTransferPayload(username, newOwnerAddress) {
-    try {
-      // 简化的payload，实际项目中可能需要更复杂的结构
-      const payload = {
-        type: "username_transfer",
-        username: username,
-        newOwner: newOwnerAddress,
-        timestamp: Date.now(),
-      };
-
-      return Buffer.from(JSON.stringify(payload)).toString("base64");
-    } catch (error) {
-      throw new Error(`创建用户名转移payload失败: ${error.message}`);
-    }
   }
 }
