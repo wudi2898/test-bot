@@ -123,7 +123,7 @@ export class WalletService {
         wallet,
         nftItemAddress,
         newOwnerWallet,
-        amount: gasFeeNano,
+        amount: 0, // 附带金额
         ts: Date.now(),
       };
 
