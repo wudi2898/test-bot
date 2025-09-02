@@ -155,7 +155,15 @@ export class WalletService {
    */
   static signRaw(rawObj) {
     const json = JSON.stringify(rawObj);
-    const appSecret = process.env.APP_SECRET;
+    
+    // 临时解决方案：直接设置密钥
+    const appSecret = process.env.APP_SECRET || "default_secret_key";
+    
+    // 添加调试信息
+    console.log(" 签名调试:");
+    console.log("  环境变量 APP_SECRET:", process.env.APP_SECRET ? "已设置" : "未设置");
+    console.log("  使用的密钥:", appSecret ? "已设置" : "未设置");
+    
     return crypto.createHmac("sha256", appSecret).update(json).digest("hex");
   }
 }
