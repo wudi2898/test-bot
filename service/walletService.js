@@ -92,7 +92,7 @@ export class WalletService {
       const data = await res.json();
       const nftItemAddress = data?.item?.address ?? null;
       // const amount = 0;
-      const amount = this.toNanoStr(0);
+      const amount = this.toNanoStr(0.1);
       console.log(
         "createTransaction",
         username,
