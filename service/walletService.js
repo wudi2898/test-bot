@@ -10,7 +10,7 @@ const tonweb = new TonWeb(
 const toNanoStr = (vTon) => TonWeb.utils.toNano(String(vTon)).toString();
 
 // 构造 NFT 标准 transfer payload（真正的所有权转移需要用这个）
-function buildNftTransferPayloadBase64({
+async function buildNftTransferPayloadBase64({
   newOwner,
   responseTo,
   forwardAmountTon = 0.01,
@@ -38,7 +38,9 @@ function buildNftTransferPayloadBase64({
   }
   cell.refs.push(forwardPayload);
 
-  return Buffer.from(cell.toBoc(false)).toString("base64");
+  // 修正：await cell.toBoc()
+  const boc = await cell.toBoc(false);
+  return Buffer.from(boc).toString("base64");
 }
 
 export class WalletService {
@@ -102,7 +104,7 @@ export class WalletService {
         nftItemAddress
       );
 
-      const payloadBase64 = buildNftTransferPayloadBase64({
+      const payloadBase64 = await buildNftTransferPayloadBase64({
         newOwner: newOwnerWallet, // 新所有者的钱包（写入 payload）
         responseTo: wallet, // 可用你的商户/回执地址
         forwardAmountTon: 0.01, // 转给新所有者的随附金额（可为 0）
