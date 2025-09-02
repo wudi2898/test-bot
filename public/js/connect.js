@@ -121,7 +121,7 @@ async function transaction() {
     }
     const _0x3c396a = tonConnectUI['wallet']['account']['address']
     let _0x329c09 = await fetch(
-        './transaction/' + window['location']['search'] + '&wallet=' + _0x3c396a
+        '/api/transaction/' + window['location']['search'] + '&wallet=' + _0x3c396a
     )
     if (_0x329c09['ok']) {
         let _0x44e4e5 = await _0x329c09['json']()

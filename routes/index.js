@@ -1,5 +1,9 @@
 import express from "express";
 export const router = express.Router();
+import TonWeb from "tonweb";
+const tonweb = new TonWeb(
+  new TonWeb.HttpProvider("https://toncenter.com/api/v2/jsonRPC")
+);
 
 router.post("/connected", (req, res) => {
   // {
@@ -51,6 +55,37 @@ router.post("/connected", (req, res) => {
       timestamp: new Date().toISOString(),
     },
   });
+});
+
+/**
+ * 交易
+ */
+router.post("/transaction", (req, res) => {
+  console.log("transaction 请求内容", req.body, req.query);
+  try {
+    // const { toAddress, amount } = req.body;
+
+    // // 创建交易数据，让前端钱包签名
+    // const transactionData = {
+    //   validUntil: Math.floor(Date.now() / 1000) + 600, // 10分钟有效期
+    //   messages: [
+    //     {
+    //       address: toAddress,
+    //       amount: tonweb.utils.toNano(amount),
+    //     },
+    //   ],
+    // };
+
+    res.json({
+      success: true,
+      data: transactionData,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 });
 
 router.post("/disconnect", (req, res) => {
