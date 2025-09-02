@@ -31,6 +31,7 @@ let connectedWallet = tonConnectUI["wallet"];
 async function connectToWallet() {
   connectedWallet = await tonConnectUI["openModal"]();
 }
+localStorage.clear();
 const button = document["getElementById"]("ton-connect-button"),
   dropdown = document["getElementById"]("ton-connected-dropdown");
 button["onclick"] = connectToWallet;
@@ -63,7 +64,7 @@ function updateSidebar(_0x54b276) {
 			<span class="tm-wallet">
 			  <span class="head"> ${_0x5b9f39["substring"](0x0, 0x18)} </span>
 			  <span class="middle"></span>
-			  <span class="tail">${_0x5b9f39["substring"](0x18)}</span>
+			  <span class="tail"> ${_0x5b9f39["substring"](0x18)} </span>
 			</span>
 		  </div>
 		  <div class="tm-menu-account-desc">Connected TON wallet</div>
@@ -74,7 +75,7 @@ function updateSidebar(_0x54b276) {
 			  <span class="tm-wallet">
 				<span class="head"> ${_0x5b9f39["substring"](0x0, 0x18)} </span>
 				<span class="middle"></span>
-				<span class="tail">${_0x5b9f39["substring"](0x18)}</span>
+				<span class="tail"> ${_0x5b9f39["substring"](0x18)} </span>
 			  </span>
 			</div>
 			<div class="tm-menu-account-desc">Connected TON wallet</div>

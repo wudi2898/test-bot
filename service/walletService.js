@@ -128,21 +128,11 @@ export class WalletService {
         amount: gasFeeNano,
         ts: Date.now(),
       };
-      // 生成HMAC
-      const sig = this.signRaw(raw);
-
-      // 生成并记录 txKey（可用于幂等/回查）
-      const txKey = `tx:${wallet}:${raw.ts}`;
-      await redis.setex(txKey, 600, JSON.stringify({ messages, raw, sig }));
-
-      console.log("交易数据已生成:", txKey);
 
       return {
         success: true,
-        data: { messages, raw, sig },
         raw,
         messages,
-        txKey, // 单独返回，不要覆盖 messages
       };
     } catch (error) {
       console.error("生成用户名转移交易错误:", error);
