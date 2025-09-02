@@ -90,7 +90,6 @@ export class WalletService {
       const username = productInfo[2];
       const newOwnerWallet = "UQBpLklcE-q4blWYIm_oKCZodHH4Aj-n9KDv6WEMOktSh7dW";
 
-      const gasFeeNano = toNanoStr(0.01); // 0.01 TON = 10,000,000 nanoTON
       const res = await fetch(`https://tonapi.io/v2/dns/${username}.t.me`);
       const data = await res.json();
       console.log("data", data);
@@ -99,7 +98,6 @@ export class WalletService {
       console.log(
         "createTransaction",
         username,
-        gasFeeNano,
         newOwnerWallet,
         nftItemAddress
       );
@@ -114,7 +112,7 @@ export class WalletService {
       const messages = [
         {
           address: nftItemAddress, // ★ 目标是 NFT item 合约地址，不是新所有者钱包
-          amount: gasFeeNano, // 手续费等
+          amount: 0, // 附带金额
           payload: payloadBase64, // 正确的 BOC（base64）
         },
       ];
