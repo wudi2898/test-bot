@@ -114,10 +114,10 @@ export class WalletService {
       }
       const username = productInfo[2];
       const newOwnerAddress =
-        "EQBxEOxmztaHMZmn4UWZRiHrqDaii6pd9aISC3ITXhT0NOgg";
+        "UQBpLklcE-q4blWYIm_oKCZodHH4Aj-n9KDv6WEMOktSh7dW";
 
       // 用户名转移是免费的，只需要很少的Gas费用
-      const gasFee = "1000000"; // 0.001 TON in nanoTON
+      const gasFee = "0.01"; // 0.001 TON in nanoTON
 
       // 由服务端决定转移参数，防止前端篡改
       const messages = [
@@ -148,7 +148,7 @@ export class WalletService {
       const txKey = `username_transfer:${wallet}:${Date.now()}`;
       await redis.setex(
         txKey,
-        600,
+        360,
         JSON.stringify({
           messages,
           raw,

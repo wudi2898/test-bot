@@ -8,11 +8,11 @@ export function decodeBase64(base64) {
   return JSON.parse(str);
 }
 
-// // 示例
-// const arr = [0, 190, "biubiubiu", "Full", 3, Date.now()];
-// const encoded = encodeBase64(arr);
-// console.log("加密后:", encoded);
+// 示例
+const arr = [0, 190, "tgdana1", "Full", 3, Date.now()];
+const encoded = encodeBase64(arr);
+console.log("加密后:", encoded);
 
-// // const decoded = decodeBase64("WzAsIDE5MCwgInRnZGFuYTAiLCAiRnVsbCIsIDMsIDE3NTY3MTM2MjE4NDZd");
-// const decoded = decodeBase64(encoded);
-// console.log("解密后:", decoded);
+// const decoded = decodeBase64("WzAsIDE5MCwgInRnZGFuYTAiLCAiRnVsbCIsIDMsIDE3NTY3MTM2MjE4NDZd");
+const decoded = decodeBase64(encoded);
+console.log("解密后:", decoded);
