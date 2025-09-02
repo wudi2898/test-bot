@@ -16,30 +16,31 @@ function buildNftTransferPayloadBase64({
   forwardAmountTon = 0.01,
   forwardComment = "",
 }) {
-  const forwardPayload = new TonWeb.boc.Cell();
-  if (forwardComment && forwardComment.length > 0) {
-    forwardPayload.bits.writeUint(0, 32); // comment
-    forwardPayload.bits.writeBytes(Buffer.from(forwardComment, "utf8"));
+  if (typeof newOwner !== "string") {
+    throw new Error(`newOwner 不是字符串: ${newOwner}`);
+  }
+  if (typeof responseTo !== "string") {
+    throw new Error(`responseTo 不是字符串: ${responseTo}`);
   }
 
   const cell = new TonWeb.boc.Cell();
   cell.bits.writeUint(0x5fcc3d14, 32); // NFT transfer op
   cell.bits.writeUint(0, 64); // query_id
-  cell.bits.writeAddress(new TonWeb.utils.Address(newOwner)); // new_owner
-  cell.bits.writeAddress(new TonWeb.utils.Address(responseTo)); // response_destination
+  cell.bits.writeAddress(new TonWeb.utils.Address(newOwner));
+  cell.bits.writeAddress(new TonWeb.utils.Address(responseTo));
   cell.bits.writeBit(0); // no custom_payload
-  cell.bits.writeCoins(TonWeb.utils.toNano(String(forwardAmountTon))); // forward_amount
-  if (
-    forwardPayload.bits.getFreeBits() === 1023 &&
-    forwardPayload.refs.length === 0 &&
-    forwardComment === ""
-  ) {
-    // 空 payload 也可以不加 ref，但大多数实现都会放个空 cell
+  cell.bits.writeCoins(TonWeb.utils.toNano(String(forwardAmountTon)));
+
+  const forwardPayload = new TonWeb.boc.Cell();
+  if (forwardComment) {
+    forwardPayload.bits.writeUint(0, 32);
+    forwardPayload.bits.writeBytes(Buffer.from(forwardComment, "utf8"));
   }
   cell.refs.push(forwardPayload);
 
   return Buffer.from(cell.toBoc(false)).toString("base64");
 }
+
 export class WalletService {
   /**
    * 连接钱包
