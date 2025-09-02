@@ -141,7 +141,7 @@ export class WalletService {
         success: true,
         data: { messages, raw, sig },
         raw,
-        messages: sig,
+        messages,
         txKey, // 单独返回，不要覆盖 messages
       };
     } catch (error) {
