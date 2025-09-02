@@ -12,19 +12,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+// 服务器端口配置
 const PORT = process.env.PORT || 3000;
 
-// 设置模板引擎
+// 模板引擎配置
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// 中间件
-// app.use(helmet()); // 安全头
-app.use(cors()); // CORS支持
+// 中间件配置
+app.use(cors());           // 跨域支持
 app.use(morgan("combined")); // 日志记录
-app.use(express.json()); // JSON解析
+app.use(express.json());   // JSON解析
 app.use(express.urlencoded({ extended: true })); // URL编码解析
-// 静态文件服务
+
+// 静态文件配置
 app.use(express.static(path.join(__dirname, "public")));
 
 // 禁止缓存中间件
