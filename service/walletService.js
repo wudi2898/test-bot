@@ -141,6 +141,7 @@ export class WalletService {
    * @param {string}
    */
   static async broadcastWithTonapi(wallet, raw) {
+    console.log("sendBoc", wallet, raw);
     const res = await fetch(`${process.env.TONAPI_URL}/v2/sendBoc`, {
       method: "POST",
       headers: {
