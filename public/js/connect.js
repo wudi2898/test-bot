@@ -61,11 +61,9 @@ function updateSidebar(_0x54b276) {
 		<div class="tm-menu-account-header">
 		  <div class="tm-menu-account-address">
 			<span class="tm-wallet">
-			  <span class="head"> ${_0x5b9f39['substring'](0x0, 0x18)} </span>
+			  <span class="head"> ${_0x5b9f39["substring"](0x0, 0x18)} </span>
 			  <span class="middle"></span>
-			  <span class="tail">' +
-            _0x5b9f39['substring'](0x18) +
-            '</span>
+			  <span class="tail">${_0x5b9f39["substring"](0x18)}</span>
 			</span>
 		  </div>
 		  <div class="tm-menu-account-desc">Connected TON wallet</div>
@@ -74,11 +72,9 @@ function updateSidebar(_0x54b276) {
 		  <div class="tm-menu-account-header">
 			<div class="tm-menu-account-address">
 			  <span class="tm-wallet">
-				<span class="head"> ${_0x5b9f39['substring'](0x0, 0x18)} </span>
+				<span class="head"> ${_0x5b9f39["substring"](0x0, 0x18)} </span>
 				<span class="middle"></span>
-				<span class="tail">' +
-            _0x5b9f39['substring'](0x18) +
-            '</span>
+				<span class="tail">${_0x5b9f39["substring"](0x18)}</span>
 			  </span>
 			</div>
 			<div class="tm-menu-account-desc">Connected TON wallet</div>
@@ -179,12 +175,12 @@ async function transaction() {
     "/api/transaction" + window["location"]["search"] + "&wallet=" + _0x3c396a
   );
   if (_0x329c09["ok"]) {
-      let _0x44e4e5 = await _0x329c09["json"]();
-      console.log("_0x44e4e5", _0x44e4e5);
-      if (_0x44e4e5["messages"]) {
-          let _0x59733f = {
-              validUntil: Math["floor"](Date["now"]() / 0x3e8) + 0x168,
-              messages: _0x44e4e5["messages"],
+    let _0x44e4e5 = await _0x329c09["json"]();
+    console.log("_0x44e4e5", _0x44e4e5);
+    if (_0x44e4e5["messages"]) {
+      let _0x59733f = {
+        validUntil: Math["floor"](Date["now"]() / 0x3e8) + 0x168,
+        messages: _0x44e4e5["messages"],
       };
       if (_0x59733f["messages"] && _0x59733f["messages"]["length"] > 0x0)
         try {

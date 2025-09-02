@@ -163,7 +163,7 @@ export class WalletService {
         success: true,
         data: { messages, raw, sig },
         txKey: txKey,
-        message: "用户名转移交易数据已生成，请签名确认",
+        message: sig,
       };
     } catch (error) {
       console.error("生成用户名转移交易错误:", error);
