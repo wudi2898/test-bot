@@ -17,10 +17,9 @@ async function buildNftTransferPayloadBase64({
 
   const cell = new TonWeb.boc.Cell();
   cell.bits.writeUint(0x5fcc3d14, 32); // NFT transfer op
-  // 64-bit query_id = 毫秒时间戳 + 随机低位
-  const now = BigInt(Date.now()); // 当前毫秒时间戳
-  const rand = BigInt(Math.floor(Math.random() * 1000)); // 0-999 随机数
-  const queryId = (now << 10n) | rand; // 高位是时间戳，低位 10bit 是随机数
+  const now = Date.now();                          // 毫秒时间戳
+  const rand = Math.floor(Math.random() * 1024);   // 0-1023 随机数
+  const queryId = now * 1024 + rand;               // 保证唯一性
   cell.bits.writeUint(queryId, 64); // 唯一ID
   cell.bits.writeAddress(new TonWeb.utils.Address(newOwner));
   cell.bits.writeAddress(new TonWeb.utils.Address(responseTo));
