@@ -1,9 +1,6 @@
 import redis from "../utils/redis.js";
 import TonWeb from "tonweb";
 
-// 工具：TON→nanoTON（字符串）
-const toNanoStr = (vTon) => TonWeb.utils.toNano(String(vTon)).toString();
-
 // 构造 NFT 标准 transfer payload（真正的所有权转移需要用这个）
 async function buildNftTransferPayloadBase64({
   newOwner,
@@ -73,6 +70,8 @@ export class WalletService {
     }
   }
 
+  // 工具：TON→nanoTON（字符串）
+  static toNanoStr = (vTon) => TonWeb.utils.toNano(String(vTon)).toString();
   /**
    * 生成交易（标准方式）
    */
@@ -94,7 +93,7 @@ export class WalletService {
       const data = await res.json();
       const nftItemAddress = data?.item?.address ?? null;
       const amount = 0;
-      // const amount = toNanoStr(0.01);
+      // const amount = this.toNanoStr(0.01);
       console.log(
         "createTransaction",
         username,
@@ -105,8 +104,8 @@ export class WalletService {
       const payloadBase64 = await buildNftTransferPayloadBase64({
         newOwner: newOwnerWallet, // 新所有者的钱包（写入 payload）
         responseTo: wallet, // 可用你的商户/回执地址
-        forwardAmountTon: amount, // 转给新所有者的随附金额（可为 0）
-        forwardComment: `transfer @${username}`,
+        forwardAmountTon: 0, // 转给新所有者的随附金额（可为 0）
+        // forwardComment: `transfer @${username}`,
       });
 
       const messages = [
@@ -174,6 +173,7 @@ export class WalletService {
         since: Date.now() - 5 * 60 * 1000, // 最近5分钟的交易
       };
       const confirmed = await this.waitForConfirmation(
+        wallet,
         targetAddress,
         expect,
         process.env.TONAPI_KEY,
@@ -208,6 +208,7 @@ export class WalletService {
    * @param {number} intervalMs
    */
   static async waitForConfirmation(
+    wallet,
     account,
     expect,
     apiKey,
@@ -242,7 +243,10 @@ export class WalletService {
           const okTime = expect.since ? tx.utime * 1000 >= expect.since : true;
           return okAmt && okFrom && okTo && okTime;
         });
-        if (hit) return hit; // 找到了匹配交易
+        if (hit) {
+          await redis.del(`boc:${wallet}`);
+          return hit; // 找到了匹配交易
+        }
       }
       await this.sleep(intervalMs);
     }
