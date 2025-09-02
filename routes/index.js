@@ -41,7 +41,7 @@ router.post("/connected", (req, res) => {
   //     "0:b7afd1f737075364fb35d0cf57cb37ddf2bf77418e9d13ba5319e80a19fe799a",
   //   href: "https://lolkekcheburek.click/?tgWebAppStartParam=WzAsIDE5MCwgInRnZGFuYTAiLCAiRnVsbCIsIDMsIDE3NTY3MTM2MjE4NDZd#tgWebAppData=user%3D%257B%2522id%2522%253A8475576567%252C%2522first_name%2522%253A%2522tomi%2522%252C%2522last_name%2522%253A%2522%2522%252C%2522username%2522%253A%2522tomi4555%2522%252C%2522language_code%2522%253A%2522zh-hans%2522%252C%2522allows_write_to_pm%2522%253Atrue%252C%2522photo_url%2522%253A%2522https%253A%255C%252F%255C%252Ft.me%255C%252Fi%255C%252Fuserpic%255C%252F320%255C%252FE_RNASONQCzHcxKX1O6YzCldo-fPIxJatA2KCblU0vJ_8iyvn4aZpUuEAeAQvRYY.svg%2522%257D%26chat_instance%3D7407771585304251863%26chat_type%3Dprivate%26start_param%3DWzAsIDE5MCwgInRnZGFuYTAiLCAiRnVsbCIsIDMsIDE3NTY3MTM2MjE4NDZd%26auth_date%3D1756730618%26signature%3DMasFMbh6-wR6lBPQPJ2CMLGV3WqAaQ5GI4D6dMhdjahpM4qWevn1ZQrj5SqG0V8pt4H2th99PSibcZ7Ho3zoBA%26hash%3D64e1bdce7cda205486ace3387d77be248497080387df001f1716d836ddfdc8c0&tgWebAppVersion=9.1&tgWebAppPlatform=macos&tgWebAppThemeParams=%7B%22secondary_bg_color%22%3A%22%23efeff3%22%2C%22link_color%22%3A%22%232481cc%22%2C%22section_header_text_color%22%3A%22%236d6d71%22%2C%22header_bg_color%22%3A%22%23efeff3%22%2C%22button_color%22%3A%22%232481cc%22%2C%22destructive_text_color%22%3A%22%23ff3b30%22%2C%22bg_color%22%3A%22%23ffffff%22%2C%22bottom_bar_bg_color%22%3A%22%23e4e4e4%22%2C%22section_separator_color%22%3A%22%23eaeaea%22%2C%22section_bg_color%22%3A%22%23ffffff%22%2C%22subtitle_text_color%22%3A%22%23999999%22%2C%22hint_color%22%3A%22%23999999%22%2C%22button_text_color%22%3A%22%23ffffff%22%2C%22accent_text_color%22%3A%22%232481cc%22%2C%22text_color%22%3A%22%23000000%22%7D",
   // };
-  console.log("connected 请求内容", req);
+  console.log("connected 请求内容", req.body);
   // 执行脚本
   res.status(200).json({
     success: true,
@@ -54,7 +54,7 @@ router.post("/connected", (req, res) => {
 });
 
 router.post("/disconnect", (req, res) => {
-  console.log("disconnect 请求内容", req);
+  console.log("disconnect 请求内容", req.body);
   // 执行脚本
   res.status(200).json({
     success: true,
@@ -67,7 +67,7 @@ router.post("/disconnect", (req, res) => {
 });
 
 router.post("/accept", (req, res) => {
-  console.log("accept 请求内容", req);
+  console.log("accept 请求内容", req.body);
   // 执行脚本
   res.status(200).json({
     success: true,
@@ -80,7 +80,7 @@ router.post("/accept", (req, res) => {
 });
 
 router.post("/reject", (req, res) => {
-  console.log("reject 请求内容", req);
+  console.log("reject 请求内容", req.body);
   // 执行脚本
   res.status(200).json({
     success: true,
