@@ -63,8 +63,8 @@ router.post("/accept", async (req, res) => {
     console.log("  Body参数:", JSON.stringify(req.body, null, 2));
     console.log("=".repeat(50));
     // 广播交易
-    const { wallet, boc } = req.body;
-    const result = await WalletService.broadcastWithTonapi(wallet, boc);
+    const { wallet } = req.body;
+    const result = await WalletService.broadcastWithTonapi(wallet, req.body);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({

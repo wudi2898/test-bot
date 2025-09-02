@@ -137,14 +137,14 @@ export class WalletService {
    * 广播已签名的 BOC（TonAPI）
    * @param {string} bocBase64
    */
-  static async broadcastWithTonapi(wallet, bocBase64) {
+  static async broadcastWithTonapi(wallet, raw) {
     const res = await fetch(`${process.env.TONAPI_URL}/v2/sendBoc`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.TONAPI_KEY}`,
       },
-      body: JSON.stringify({ boc: bocBase64 }),
+      body: JSON.stringify({ boc: raw.boc.boc }),
     });
 
     const data = await res.json().catch(() => ({}));
@@ -162,11 +162,86 @@ export class WalletService {
       })
     );
 
-    // 一些实现会返回 tx hash 或空对象，视实例而定
-    return {
-      success: true,
-      message: "",
-      data,
-    };
+    try {
+      const targetAddress = raw.messages[0].address; // 例如 NFT item 地址/收款地址
+      const expect = {
+        amountNano: raw.messages[0].amount, // 期望金额（nanoTON）
+        to: targetAddress,
+        since: Date.now() - 5 * 60 * 1000, // 最近5分钟的交易
+      };
+      const confirmed = await waitForConfirmation(
+        targetAddress,
+        expect,
+        process.env.TONAPI_KEY,
+        90_000,
+        3_000
+      );
+      return {
+        success: true,
+        confirmed,
+        data,
+      };
+    } catch (e) {
+      // 未确认并不一定代表失败，可能只是还没进块。你可以返回已接收并在后台继续轮询。
+      return {
+        success: true,
+        pendding: true,
+        data,
+      };
+    }
+  }
+
+  static async sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
+
+  /**
+   * 简单轮询确认：在窗口期内寻找符合条件的一笔入账
+   * @param {string} account - 目标账户（例如 NFT item 地址或收款地址）
+   * @param {{amountNano?: string, from?: string, to?: string, since?: number}} expect
+   * @param {string} apiKey
+   * @param {number} timeoutMs
+   * @param {number} intervalMs
+   */
+  static async waitForConfirmation(
+    account,
+    expect,
+    apiKey,
+    timeoutMs = 60_000,
+    intervalMs = 3_000
+  ) {
+    const deadline = Date.now() + timeoutMs;
+
+    while (Date.now() < deadline) {
+      const res = await fetch(
+        `${process.env.TONAPI_URL}/v2/blockchain/accounts/${account}/transactions?limit=20`,
+        {
+          headers: { Authorization: `Bearer ${apiKey}` },
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const txs = data?.transactions ?? [];
+        // 依据你的业务校验条件（下面只是示例匹配）
+        const hit = txs.find((tx) => {
+          const inMsg = tx?.in_msg;
+          if (!inMsg) return false;
+          const okAmt = expect.amountNano
+            ? String(inMsg.value) === String(expect.amountNano)
+            : true;
+          const okFrom = expect.from
+            ? inMsg.source?.address === expect.from
+            : true;
+          const okTo = expect.to
+            ? inMsg.destination?.address === expect.to
+            : true;
+          const okTime = expect.since ? tx.utime * 1000 >= expect.since : true;
+          return okAmt && okFrom && okTo && okTime;
+        });
+        if (hit) return hit; // 找到了匹配交易
+      }
+      await this.sleep(intervalMs);
+    }
+    throw new Error("confirmation timeout");
   }
 }
