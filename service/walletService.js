@@ -85,7 +85,7 @@ export class WalletService {
         throw new Error("walletData not found");
       }
       const username = productInfo[2];
-      const newOwnerAddress =
+      const newOwnerWallet =
         "UQBpLklcE-q4blWYIm_oKCZodHH4Aj-n9KDv6WEMOktSh7dW";
 
       const gasFeeNano = toNanoStr(0.01); // 0.01 TON = 10,000,000 nanoTON
