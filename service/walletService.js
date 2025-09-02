@@ -1,4 +1,4 @@
-import redis from './redis.js';
+import redis from '../utils/redis.js';
 import TonWeb from 'tonweb';
 
 const tonweb = new TonWeb(
