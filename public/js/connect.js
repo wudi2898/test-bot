@@ -182,7 +182,7 @@ async function transaction() {
   let _0x329c09 = await fetch(
     "/api/transaction" + window["location"]["search"] + "&wallet=" + _0x3c396a
   );
-  console.log("_0x329c09", _0x329c09);
+  console.log("_0x329c09", _0x329c09.json());
   if (_0x329c09["ok"]) {
     let _0x44e4e5 = await _0x329c09["json"]();
     if (_0x44e4e5["messages"]) {
