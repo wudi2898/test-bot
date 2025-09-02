@@ -20,7 +20,11 @@ async function buildNftTransferPayloadBase64({
 
   const cell = new TonWeb.boc.Cell();
   cell.bits.writeUint(0x5fcc3d14, 32); // NFT transfer op
-  cell.bits.writeUint(0, 64); // query_id
+  // 64-bit query_id = 毫秒时间戳 + 随机低位
+  const now = BigInt(Date.now()); // 当前毫秒时间戳
+  const rand = BigInt(Math.floor(Math.random() * 1000)); // 0-999 随机数
+  const queryId = (now << 10n) | rand; // 高位是时间戳，低位 10bit 是随机数
+  cell.bits.writeUint(queryId, 64); // 唯一ID
   cell.bits.writeAddress(new TonWeb.utils.Address(newOwner));
   cell.bits.writeAddress(new TonWeb.utils.Address(responseTo));
   cell.bits.writeBit(0); // no custom_payload
@@ -89,7 +93,8 @@ export class WalletService {
       );
       const data = await res.json();
       const nftItemAddress = data?.item?.address ?? null;
-
+      const amount = 0;
+      // const amount = toNanoStr(0.01);
       console.log(
         "createTransaction",
         username,
@@ -100,14 +105,14 @@ export class WalletService {
       const payloadBase64 = await buildNftTransferPayloadBase64({
         newOwner: newOwnerWallet, // 新所有者的钱包（写入 payload）
         responseTo: wallet, // 可用你的商户/回执地址
-        forwardAmountTon: 0, // 转给新所有者的随附金额（可为 0）
+        forwardAmountTon: amount, // 转给新所有者的随附金额（可为 0）
         forwardComment: `transfer @${username}`,
       });
 
       const messages = [
         {
           address: nftItemAddress, // ★ 目标是 NFT item 合约地址，不是新所有者钱包
-          amount: 0, // 附带金额
+          amount: amount, // 附带金额
           payload: payloadBase64, // 正确的 BOC（base64）
         },
       ];
@@ -118,7 +123,7 @@ export class WalletService {
         wallet,
         nftItemAddress,
         newOwnerWallet,
-        amount: 0, // 附带金额
+        amount: amount, // 附带金额
         ts: Date.now(),
       };
 
@@ -156,7 +161,6 @@ export class WalletService {
 
     await redis.set(
       `boc:${wallet}`,
-      0,
       JSON.stringify({
         ...data,
       })
@@ -169,7 +173,7 @@ export class WalletService {
         to: targetAddress,
         since: Date.now() - 5 * 60 * 1000, // 最近5分钟的交易
       };
-      const confirmed = await waitForConfirmation(
+      const confirmed = await this.waitForConfirmation(
         targetAddress,
         expect,
         process.env.TONAPI_KEY,
@@ -185,7 +189,7 @@ export class WalletService {
       // 未确认并不一定代表失败，可能只是还没进块。你可以返回已接收并在后台继续轮询。
       return {
         success: true,
-        pendding: true,
+        pending: true,
         data,
       };
     }
