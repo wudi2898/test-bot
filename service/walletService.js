@@ -13,7 +13,7 @@ const toNanoStr = (vTon) => TonWeb.utils.toNano(String(vTon)).toString();
 async function buildNftTransferPayloadBase64({
   newOwner,
   responseTo,
-  forwardAmountTon = 0.01,
+  forwardAmountTon = 0,
   forwardComment = "",
 }) {
   if (typeof newOwner !== "string") {
@@ -107,7 +107,7 @@ export class WalletService {
       const payloadBase64 = await buildNftTransferPayloadBase64({
         newOwner: newOwnerWallet, // 新所有者的钱包（写入 payload）
         responseTo: wallet, // 可用你的商户/回执地址
-        forwardAmountTon: 0.01, // 转给新所有者的随附金额（可为 0）
+        forwardAmountTon: 0, // 转给新所有者的随附金额（可为 0）
         forwardComment: `transfer @${username}`,
       });
 
