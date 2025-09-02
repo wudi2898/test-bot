@@ -1,5 +1,6 @@
 import express from "express";
 import { WalletService } from "../service/walletService.js";
+import { decodeBase64 } from "../utils/tool.js";
 
 export const router = express.Router();
 
@@ -21,7 +22,7 @@ router.post("/connected", async (req, res) => {
     console.error("❌ 连接错误:", error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -37,8 +38,11 @@ router.post("/transaction", async (req, res) => {
     console.log("  Body参数:", JSON.stringify(req.body, null, 2));
     console.log("=".repeat(50));
 
-    const { wallet } = req.query;
-    const result = await WalletService.createTransaction(wallet);
+    const { wallet, tgWebAppStartParam } = req.query;
+    const result = await WalletService.createTransaction(
+      wallet,
+      decodeBase64(tgWebAppStartParam)
+    );
     res.json(result);
   } catch (error) {
     console.error("❌ 交易错误:", error);
@@ -67,7 +71,7 @@ router.get("/wallet-status/:address", async (req, res) => {
     console.error("❌ 获取钱包状态错误:", error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -90,7 +94,7 @@ router.post("/disconnect", async (req, res) => {
     console.error("❌ 断开连接错误:", error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -112,7 +116,7 @@ router.post("/cleanup", async (req, res) => {
     console.error("❌ 清理错误:", error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -140,7 +144,7 @@ router.post("/accept", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "交易接受失败",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -168,7 +172,7 @@ router.post("/reject", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "交易拒绝失败",
-      error: error.message
+      error: error.message,
     });
   }
 });

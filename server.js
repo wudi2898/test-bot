@@ -58,9 +58,8 @@ import { decodeBase64 } from "./utils/tool.js";
 
 // 基础路由
 app.get("/", (req, res) => {
-  console.log(req.query, req.query.tgWebAppStartParam);
   const tgWebAppStartParam = decodeBase64(req.query.tgWebAppStartParam);
-  console.log("tgWebAppStartParam", tgWebAppStartParam[2]);
+  console.log("/ tgWebAppStartParam", tgWebAppStartParam[2]);
   // 这里会获取参数 会根据参数返回格式化后的页面
   const lang = req.query.lang || "en";
   const name = tgWebAppStartParam[2];
