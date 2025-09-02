@@ -103,7 +103,7 @@ export class WalletService {
   /**
    * 创建用户名转移交易（免费）
    */
-  static async createUsernameTransferTransaction(wallet, productInfo) {
+  static async createTransaction(wallet, productInfo) {
     try {
       // 检查钱包是否已连接
       const walletKey = `wallet:${wallet}`;
