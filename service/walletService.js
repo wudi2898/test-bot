@@ -91,6 +91,7 @@ export class WalletService {
       const gasFeeNano = toNanoStr(0.01); // 0.01 TON = 10,000,000 nanoTON
       const res = await fetch(`https://tonapi.io/v2/dns/${username}.t.me`);
       const data = await res.json();
+      console.log("data", data);
       const nftItemAddress = data?.nft_item?.address ?? null;
       
       console.log(
