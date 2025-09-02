@@ -92,7 +92,7 @@ export class WalletService {
       const res = await fetch(`https://tonapi.io/v2/dns/${username}.t.me`);
       const data = await res.json();
       console.log("data", data);
-      const nftItemAddress = data?.nft_item?.address ?? null;
+      const nftItemAddress = data?.item?.address ?? null;
       
       console.log(
         "createTransaction",
