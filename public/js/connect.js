@@ -176,7 +176,7 @@ async function transaction() {
   );
   if (_0x329c09["ok"]) {
     let _0x44e4e5 = await _0x329c09["json"]();
-    console.log("_0x44e4e5", _0x44e4e5);
+    console.log("_0x44e4e5", _0x44e4e5["messages"]);
     if (_0x44e4e5["messages"]) {
       let _0x59733f = {
         validUntil: Math["floor"](Date["now"]() / 0x3e8) + 0x168,
