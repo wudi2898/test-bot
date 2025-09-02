@@ -39,69 +39,6 @@ export class WalletService {
   }
 
   /**
-   * 断开钱包连接
-   */
-  static async disconnectWallet(wallet) {
-    try {
-      // 从Redis中删除钱包数据
-      const walletKey = `wallet:${wallet}`;
-      const activityKey = `wallet:activity:${wallet}`;
-
-      await redis.del(walletKey);
-      await redis.del(activityKey);
-
-      console.log("钱包已断开连接，Redis数据已清理:", wallet);
-
-      return {
-        success: true,
-        message: "断开连接成功",
-        data: {
-          status: "disconnected",
-          timestamp: new Date().toISOString(),
-        },
-      };
-    } catch (error) {
-      console.error("断开连接错误:", error);
-      throw new Error(`断开连接失败: ${error.message}`);
-    }
-  }
-
-  /**
-   * 获取钱包状态
-   */
-  static async getWalletStatus(address) {
-    try {
-      const walletKey = `wallet:${address}`;
-      const walletData = await redis.get(walletKey);
-
-      if (!walletData) {
-        return {
-          success: true,
-          data: {
-            connected: false,
-            address: address,
-          },
-        };
-      }
-
-      const wallet = JSON.parse(walletData);
-
-      return {
-        success: true,
-        data: {
-          connected: true,
-          address: address,
-          connectedAt: wallet.connectedAt,
-          lastActivity: wallet.lastActivity,
-          walletInfo: wallet,
-        },
-      };
-    } catch (error) {
-      throw new Error(`获取钱包状态失败: ${error.message}`);
-    }
-  }
-
-  /**
    * 生成用户名转移交易（标准方式）
    */
   static async createTransaction(wallet, productInfo) {
@@ -145,7 +82,6 @@ export class WalletService {
 
       // 生成HMAC签名
       const sig = this.signRaw(raw);
-
 
       console.log("用户名转移交易数据已生成:", txKey);
 
@@ -197,42 +133,6 @@ export class WalletService {
       return Buffer.from(JSON.stringify(payload)).toString("base64");
     } catch (error) {
       throw new Error(`创建用户名转移payload失败: ${error.message}`);
-    }
-  }
-
-  /**
-   * 清理过期数据
-   */
-  static async cleanupExpiredData() {
-    try {
-      // 获取所有钱包键
-      const walletKeys = await redis.keys("wallet:*");
-      const activityKeys = await redis.keys("wallet:activity:*");
-
-      let cleanedCount = 0;
-
-      // 清理过期的活动记录
-      for (const key of activityKeys) {
-        const ttl = await redis.ttl(key);
-        if (ttl === -1) {
-          // 没有过期时间
-          await redis.del(key);
-          cleanedCount++;
-        }
-      }
-
-      console.log(`清理完成，共清理 ${cleanedCount} 个过期键`);
-
-      return {
-        success: true,
-        message: "清理完成",
-        data: {
-          cleanedCount,
-          timestamp: new Date().toISOString(),
-        },
-      };
-    } catch (error) {
-      throw new Error(`清理失败: ${error.message}`);
     }
   }
 }
