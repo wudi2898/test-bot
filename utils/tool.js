@@ -1,9 +1,9 @@
-function encodeBase64(data) {
+export function encodeBase64(data) {
   const str = JSON.stringify(data);
   return Buffer.from(str).toString("base64");
 }
 
-function decodeBase64(base64) {
+export function decodeBase64(base64) {
   const str = Buffer.from(base64, "base64").toString();
   return JSON.parse(str);
 }
