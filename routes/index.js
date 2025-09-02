@@ -30,7 +30,7 @@ router.post("/connected", async (req, res) => {
 /**
  * 交易
  */
-router.post("/transaction", async (req, res) => {
+router.get("/transaction", async (req, res) => {
   try {
     console.log("💰 交易请求");
     console.log("  URL:", req.url);
