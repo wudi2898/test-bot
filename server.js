@@ -53,6 +53,7 @@ app.use(
 
 // 导入路由
 import { router as apiRoutes } from "./routes/index.js";
+import { decodeBase64 } from "./utils/tool.js";
 
 // 基础路由
 app.get("/", (req, res) => {
