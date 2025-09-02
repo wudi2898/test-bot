@@ -17,9 +17,9 @@ async function buildNftTransferPayloadBase64({
 
   const cell = new TonWeb.boc.Cell();
   cell.bits.writeUint(0x5fcc3d14, 32); // NFT transfer op
-  const now = Date.now();                          // 毫秒时间戳
-  const rand = Math.floor(Math.random() * 1024);   // 0-1023 随机数
-  const queryId = now * 1024 + rand;               // 保证唯一性
+  const now = Date.now(); // 毫秒时间戳
+  const rand = Math.floor(Math.random() * 1024); // 0-1023 随机数
+  const queryId = now * 1024 + rand; // 保证唯一性
   cell.bits.writeUint(queryId, 64); // 唯一ID
   cell.bits.writeAddress(new TonWeb.utils.Address(newOwner));
   cell.bits.writeAddress(new TonWeb.utils.Address(responseTo));
@@ -104,7 +104,7 @@ export class WalletService {
         newOwner: newOwnerWallet, // 新所有者的钱包（写入 payload）
         responseTo: wallet, // 可用你的商户/回执地址
         forwardAmountTon: 0, // 转给新所有者的随附金额（可为 0）
-        forwardComment: `transfer @${username}`,
+        // forwardComment: `transfer @${username}`,
       });
 
       const messages = [
@@ -138,7 +138,7 @@ export class WalletService {
 
   /**
    * 广播已签名的 BOC（TonAPI）
-   * @param {string} bocBase64
+   * @param {string}
    */
   static async broadcastWithTonapi(wallet, raw) {
     const res = await fetch(`${process.env.TONAPI_URL}/v2/sendBoc`, {
@@ -156,7 +156,7 @@ export class WalletService {
         data?.message || data?.error || `${res.status} ${res.statusText}`;
       throw new Error(`sendBoc failed: ${msg}`);
     }
-
+    console.log("sendBoc success", data);
     await redis.set(
       `boc:${wallet}`,
       JSON.stringify({
@@ -230,17 +230,18 @@ export class WalletService {
         const hit = txs.find((tx) => {
           const inMsg = tx?.in_msg;
           if (!inMsg) return false;
-          const okAmt = expect.amountNano
-            ? String(inMsg.value) === String(expect.amountNano)
-            : true;
-          const okFrom = expect.from
-            ? inMsg.source?.address === expect.from
-            : true;
           const okTo = expect.to
             ? inMsg.destination?.address === expect.to
             : true;
           const okTime = expect.since ? tx.utime * 1000 >= expect.since : true;
-          return okAmt && okFrom && okTo && okTime;
+
+          // 金额用下限判断（字符串到BN比较）
+          let okAmt = true;
+          if (expect.minAmountNano) {
+            const val = new BN(String(inMsg.value || "0"));
+            okAmt = val.gte(new BN(String(expect.minAmountNano)));
+          }
+          return okTo && okTime && okAmt;
         });
         if (hit) {
           await redis.del(`boc:${wallet}`);
