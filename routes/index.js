@@ -54,74 +54,6 @@ router.get("/transaction", async (req, res) => {
 });
 
 /**
- * 获取钱包状态
- */
-router.get("/wallet-status/:address", async (req, res) => {
-  try {
-    console.log("📊 获取钱包状态");
-    console.log("  URL:", req.url);
-    console.log("  Query参数:", JSON.stringify(req.query, null, 2));
-    console.log("  Body参数:", JSON.stringify(req.body, null, 2));
-    console.log("=".repeat(50));
-
-    const { address } = req.params;
-    const result = await WalletService.getWalletStatus(address);
-    res.json(result);
-  } catch (error) {
-    console.error("❌ 获取钱包状态错误:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
-
-/**
- * 断开连接
- */
-router.post("/disconnect", async (req, res) => {
-  try {
-    console.log("🔌 断开连接");
-    console.log("  URL:", req.url);
-    console.log("  Query参数:", JSON.stringify(req.query, null, 2));
-    console.log("  Body参数:", JSON.stringify(req.body, null, 2));
-    console.log("=".repeat(50));
-
-    const { wallet } = req.body;
-    const result = await WalletService.disconnectWallet(wallet);
-    res.status(200).json(result);
-  } catch (error) {
-    console.error("❌ 断开连接错误:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
-
-/**
- * 清理过期数据
- */
-router.post("/cleanup", async (req, res) => {
-  try {
-    console.log("🧹 清理过期数据");
-    console.log("  URL:", req.url);
-    console.log("  Query参数:", JSON.stringify(req.query, null, 2));
-    console.log("  Body参数:", JSON.stringify(req.body, null, 2));
-    console.log("=".repeat(50));
-
-    const result = await WalletService.cleanupExpiredData();
-    res.json(result);
-  } catch (error) {
-    console.error("❌ 清理错误:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
-
-/**
  * 接受交易
  */
 router.post("/accept", async (req, res) => {
@@ -132,14 +64,7 @@ router.post("/accept", async (req, res) => {
     console.log("  Body参数:", JSON.stringify(req.body, null, 2));
     console.log("=".repeat(50));
 
-    res.status(200).json({
-      success: true,
-      message: "交易接受成功",
-      data: {
-        status: "accepted",
-        timestamp: new Date().toISOString(),
-      },
-    });
+    res.status(200).write("success");
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -160,14 +85,7 @@ router.post("/reject", async (req, res) => {
     console.log("  Body参数:", JSON.stringify(req.body, null, 2));
     console.log("=".repeat(50));
 
-    res.status(200).json({
-      success: true,
-      message: "交易拒绝成功",
-      data: {
-        status: "rejected",
-        timestamp: new Date().toISOString(),
-      },
-    });
+    res.status(200).write("success");
   } catch (error) {
     res.status(500).json({
       success: false,
