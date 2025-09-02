@@ -21,7 +21,7 @@ app.set("views", path.join(__dirname, "views"));
 
 // 中间件配置
 app.use(cors());           // 跨域支持
-app.use(morgan("combined")); // 日志记录
+// app.use(morgan("combined")); // 日志记录
 app.use(express.json());   // JSON解析
 app.use(express.urlencoded({ extended: true })); // URL编码解析
 
