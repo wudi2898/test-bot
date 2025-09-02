@@ -15,17 +15,41 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // 设置模板引擎
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
 // 中间件
-app.use(helmet()); // 安全头
+// app.use(helmet()); // 安全头
 app.use(cors()); // CORS支持
 app.use(morgan("combined")); // 日志记录
 app.use(express.json()); // JSON解析
 app.use(express.urlencoded({ extended: true })); // URL编码解析
 // 静态文件服务
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
+
+// 禁止缓存中间件
+app.use((req, res, next) => {
+  res.set({
+    "Cache-Control": "no-cache, no-store, must-revalidate, private",
+    Pragma: "no-cache",
+    Expires: "0",
+    "Surrogate-Control": "no-store",
+  });
+  next();
+});
+
+// 静态文件服务
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    setHeaders: (res, path) => {
+      res.set({
+        "Cache-Control": "no-cache, no-store, must-revalidate, private",
+        Pragma: "no-cache",
+        Expires: "0",
+      });
+    },
+  })
+);
 
 // 导入路由
 import { router as apiRoutes } from "./routes/index.js";
