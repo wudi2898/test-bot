@@ -1,5 +1,5 @@
 import express from "express";
-import { WalletService } from "../utils/walletService.js";
+import { WalletService } from "../service/walletService.js";
 
 export const router = express.Router();
 

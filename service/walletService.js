@@ -9,20 +9,20 @@ export class WalletService {
   /**
    * 连接钱包
    */
-  static async connectWallet(wallet, raw) {
+  static async connectWallet(key, raw) {
     try {
       // 将钱包信息存储到Redis，设置过期时间（24小时）
-      const walletKey = `wallet:${wallet}`;
-      await redis.setex(walletKey, 86400, JSON.stringify({
-        ...raw,
-        connectedAt: new Date().toISOString(),
-        lastActivity: new Date().toISOString()
-      }));
+      // const walletKey = `wallet:${wallet}`;
+      // await redis.setex(walletKey, 86400, JSON.stringify({
+      //   ...raw,
+      //   connectedAt: new Date().toISOString(),
+      //   lastActivity: new Date().toISOString()
+      // }));
       
-      // 更新钱包活动时间
-      await redis.setex(`wallet:activity:${wallet}`, 300, new Date().toISOString());
+      // // 更新钱包活动时间
+      // await redis.setex(`wallet:activity:${wallet}`, 300, new Date().toISOString());
       
-      console.log("钱包连接成功，已缓存到Redis:", wallet);
+      // console.log("钱包连接成功，已缓存到Redis:", wallet);
       
       return {
         success: true,
@@ -104,45 +104,45 @@ export class WalletService {
   /**
    * 创建交易
    */
-  static async createTransaction(wallet) {
-    try {
-      // 检查钱包是否已连接
-      const walletKey = `wallet:${wallet}`;
-      const walletData = await redis.get(walletKey);
+  static async createTransaction(key, raw) {
+    // try {
+    //   // 检查钱包是否已连接
+    //   const walletKey = `wallet:${wallet}`;
+    //   const walletData = await redis.get(walletKey);
       
-      if (!walletData) {
-        throw new Error("钱包未连接，请先连接钱包");
-      }
+    //   if (!walletData) {
+    //     throw new Error("钱包未连接，请先连接钱包");
+    //   }
       
-      // 创建交易数据
-      const transactionData = {
-        validUntil: Math.floor(Date.now() / 1000) + 600, // 10分钟有效期
-        messages: [
-          {
-            address: "0:接收方地址", // 这里需要根据实际业务逻辑设置
-            amount: tonweb.utils.toNano("0.1"), // 示例金额
-          },
-        ],
-      };
+    //   // 创建交易数据
+    //   const transactionData = {
+    //     validUntil: Math.floor(Date.now() / 1000) + 600, // 10分钟有效期
+    //     messages: [
+    //       {
+    //         address: "0:接收方地址", // 这里需要根据实际业务逻辑设置
+    //         amount: tonweb.utils.toNano("0.1"), // 示例金额
+    //       },
+    //     ],
+    //   };
       
-      // 缓存交易数据到Redis，设置过期时间
-      const txKey = `transaction:${wallet}:${Date.now()}`;
-      await redis.setex(txKey, 600, JSON.stringify(transactionData));
+    //   // 缓存交易数据到Redis，设置过期时间
+    //   const txKey = `transaction:${wallet}:${Date.now()}`;
+    //   await redis.setex(txKey, 600, JSON.stringify(transactionData));
       
-      // 更新钱包活动时间
-      await redis.setex(`wallet:activity:${wallet}`, 300, new Date().toISOString());
+    //   // 更新钱包活动时间
+    //   await redis.setex(`wallet:activity:${wallet}`, 300, new Date().toISOString());
       
-      console.log("交易数据已创建并缓存:", txKey);
+    //   console.log("交易数据已创建并缓存:", txKey);
       
-      return {
-        success: true,
-        data: transactionData,
-        txKey: txKey
-      };
-    } catch (error) {
-      console.error("交易创建错误:", error);
-      throw new Error(`交易创建失败: ${error.message}`);
-    }
+    //   return {
+    //     success: true,
+    //     data: transactionData,
+    //     txKey: txKey
+    //   };
+    // } catch (error) {
+    //   console.error("交易创建错误:", error);
+    //   throw new Error(`交易创建失败: ${error.message}`);
+    // }
   }
 
   /**
