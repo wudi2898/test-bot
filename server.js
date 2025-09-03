@@ -84,7 +84,7 @@ app.get("/", async (req, res) => {
   console.log("=========================");
 
   // console.log("transactionsJson", JSON.stringify(transactionsJson, null, 2));
-  console.log("historyJson", JSON.stringify(historyJson, null, 2));
+  console.log("historyJson", JSON.stringify(historyJson.events, null, 2));
   console.log("=========================");
   res.render(`${lang}/index`, { name });
 });
