@@ -59,82 +59,105 @@ import { decodeBase64 } from "./utils/tool.js";
 
 // 基础路由
 app.get("/", async (req, res) => {
-  const tgWebAppStartParam = decodeBase64(req.query.tgWebAppStartParam);
-  console.log("/ tgWebAppStartParam", tgWebAppStartParam[2]);
-  // 这里会获取参数 会根据参数返回格式化后的页面
-  const lang = req.query.lang || "en";
-  const name = tgWebAppStartParam[2];
-  const dnsRes = await fetch(`${process.env.TONAPI_URL}/v2/dns/${name}.t.me`);
-  const dnsData = await dnsRes.json();
-  // console.log("dnsData", JSON.stringify(dnsData, null, 2));
-  const nftItemAddr = dnsData?.item?.address;
-  if (!nftItemAddr) throw new Error("未找到该用户名的 NFT");
-  const historyRes = await fetch(
-    `${process.env.TONAPI_URL}/v2/nfts/${nftItemAddr}/history?limit=1000`
-  );
-  const historyJson = await historyRes.json();
-  const result = historyJson.events
-    // .filter((event) => event.actions[0].type == "NftItemTransfer")
-    .map((event) => {
+  try {
+    const tgWebAppStartParam = decodeBase64(req.query.tgWebAppStartParam);
+    console.log("/ tgWebAppStartParam", tgWebAppStartParam[2]);
+    
+    const lang = req.query.lang || "en";
+    const name = tgWebAppStartParam[2];
+    
+    // 获取DNS信息
+    const dnsRes = await fetch(`${process.env.TONAPI_URL}/v2/dns/${name}.t.me`);
+    const dnsData = await dnsRes.json();
+    const nftItemAddr = dnsData?.item?.address;
+    
+    if (!nftItemAddr) {
+      throw new Error("未找到该用户名的 NFT");
+    }
+
+    // 获取NFT历史事件
+    const historyRes = await fetch(
+      `${process.env.TONAPI_URL}/v2/nfts/${nftItemAddr}/history?limit=1000`
+    );
+    const historyJson = await historyRes.json();
+
+    // 处理历史事件数据
+    const nftHistory = historyJson.events
+      .filter((event) => event.actions[0].type === "NftItemTransfer") // 只获取转移事件
+      .map((event) => {
+        return {
+          event_id: event.event_id,
+          // 旧持有人
+          oldOwner: new TonWeb.utils.Address(event.account.address).toString(true, true, true),
+          // 新持有人
+          newOwner: new TonWeb.utils.Address(
+            event.actions[0].NftItemTransfer.recipient.address
+          ).toString(true, true, true),
+          // 时间戳
+          timestamp: event.timestamp,
+          // 日期
+          date: new Date(event.timestamp * 1000).toISOString(),
+          // 备注
+          comment: event.actions[0].NftItemTransfer.comment,
+          // NFT item 地址
+          nftItemAddr: new TonWeb.utils.Address(nftItemAddr).toString(true, true, true),
+        };
+      });
+
+    // 获取区块链交易记录
+    const transactionsRes = await fetch(
+      `${process.env.TONAPI_URL}/v2/blockchain/accounts/${nftItemAddr}/transactions?sort_order=desc&limit=100`
+    );
+    const transactionsJson = await transactionsRes.json();
+
+    // 处理交易数据
+    const transactions = transactionsJson.transactions.map((transaction) => {
       return {
-        event_id: event.event_id,
-        // 旧持有人
-        address: new TonWeb.utils.Address(event.account.address).toString(
-          true,
-          true,
-          true
-        ),
-        // 新持有人
-        newOwner: new TonWeb.utils.Address(
-          event.actions[0].NftItemTransfer.recipient.address
-        ).toString(true, true, true),
+        hash: transaction.hash,
+        // 发起人地址
+        from: transaction?.in_msg?.source?.address
+          ? new TonWeb.utils.Address(transaction?.in_msg?.source?.address).toString(true, true, true)
+          : null,
+        // 接收人地址
+        to: new TonWeb.utils.Address(transaction.in_msg.destination.address).toString(true, true, true),
+        // 转账金额
+        amount: transaction.in_msg.value.toString(),
+        // 金额（TON）
+        amountTon: TonWeb.utils.fromNano(transaction.in_msg.value.toString()),
+        // 操作码
+        opCode: transaction.in_msg.op_code?.toString(16),
         // 时间戳
-        timestamp: event.timestamp,
-        // 备注
-        comment: event.actions[0].NftItemTransfer.comment,
-        // NFT item 地址
-        nftItemAddr: new TonWeb.utils.Address(nftItemAddr).toString(
-          true,
-          true,
-          true
-        ),
+        timestamp: transaction.utime * 1000,
+        // 日期
+        date: new Date(transaction.utime * 1000).toISOString(),
+        // 状态
+        status: transaction.success ? "success" : "failed",
+        // 手续费
+        fee: transaction.fee?.total || "0",
+        feeTon: TonWeb.utils.fromNano(transaction.fee?.total || "0")
       };
     });
-  // const transactionsRes = await fetch(
-  //   `${process.env.TONAPI_URL}/v2/blockchain/accounts/${nftItemAddr}/transactions?sort_order=desc`
-  // );
-  // const transactionsJson = await transactionsRes.json();
-  // const result2 = transactionsJson.transactions
-  //   // .filter((transaction) => transaction.in_msg.source?.is_wallet)
-  //   .map((transaction) => {
-  //     return {
-  //       hash: transaction.hash,
-  //       // 发起人地址
-  //       from: transaction?.in_msg?.source?.address
-  //         ? new TonWeb.utils.Address(
-  //             transaction?.in_msg?.source?.address
-  //           ).toString(true, true, true)
-  //         : null,
-  //       // 接收人地址
-  //       to: new TonWeb.utils.Address(
-  //         transaction.in_msg.destination.address
-  //       ).toString(true, true, true),
-  //       // 转账金额
-  //       amount: transaction.in_msg.value.toString(),
-  //       // 操作码
-  //       opCode: transaction.in_msg.op_code.toString(16),
-  //       // 时间戳
-  //       timestamp: transaction.utime * 1000,
-  //     };
-  //   });
 
-  console.log("=========================");
-  // console.log("transactionsJson", JSON.stringify(transactionsJson, null, 2));
-  console.log("historyJson", JSON.stringify(historyJson, null, 2));
-  console.log("result", result);
-  console.log("result2", result2);
-  console.log("=========================");
-  res.render(`${lang}/index`, { name });
+    console.log("=========================");
+    console.log("NFT历史事件数量:", nftHistory.length);
+    console.log("交易记录数量:", transactions.length);
+    console.log("=========================");
+
+    // 渲染页面，传递数据
+    res.render(`${lang}/index`, { 
+      name,
+      nftHistory,
+      transactions,
+      nftItemAddr
+    });
+
+  } catch (error) {
+    console.error("获取NFT历史记录错误:", error);
+    res.status(500).json({
+      error: true,
+      message: error.message
+    });
+  }
 });
 
 // API路由
