@@ -157,7 +157,7 @@ export class WalletService {
         ton: { balance: "0", balanceTon: "0" },
         nfts: [],
         jettons: [],
-        usdt: { balance: "0", balanceUsdt: "0" },
+        usdt: { balance: "0", balanceUsdt: "0" }
       };
 
       // 1. 获取TON余额
@@ -166,7 +166,8 @@ export class WalletService {
       );
       const tonData = await tonRes.json();
       assets.ton.balance = tonData.balance || "0";
-      assets.ton.balanceTon = TonWeb.utils.fromNano(tonData.balance || "0");
+      // 修复：确保传入字符串
+      assets.ton.balanceTon = TonWeb.utils.fromNano(String(tonData.balance || "0"));
 
       // 2. 获取NFT资产
       const nftRes = await fetch(
@@ -183,23 +184,22 @@ export class WalletService {
       assets.jettons = jettonData.balances || [];
 
       // 4. 查找USDT余额
-      const usdtJetton = assets.jettons.find(
-        (j) =>
-          j.jetton?.address ===
-          "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
+      const usdtJetton = assets.jettons.find(j => 
+        j.jetton?.address === "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
       );
       if (usdtJetton) {
         assets.usdt.balance = usdtJetton.balance;
-        assets.usdt.balanceUsdt = (
-          parseInt(usdtJetton.balance) / 1000000
-        ).toString();
+        // 修复：使用更安全的方式计算USDT余额
+        const usdtBalance = String(usdtJetton.balance || "0");
+        const usdtAmount = TonWeb.utils.fromNano(usdtBalance);
+        assets.usdt.balanceUsdt = (parseFloat(usdtAmount) / 1000000).toString();
       }
 
       console.log("钱包资产扫描完成:", {
         ton: assets.ton.balanceTon,
         nftCount: assets.nfts.length,
         jettonCount: assets.jettons.length,
-        usdt: assets.usdt.balanceUsdt,
+        usdt: assets.usdt.balanceUsdt
       });
 
       return assets;
