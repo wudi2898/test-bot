@@ -34,3 +34,6 @@ echo "�� 查看日志: npm run pm2:logs"
 echo "�� 监控面板: npm run pm2:monit"
 echo "�� 重启应用: npm run pm2:restart"
 echo "⏹️  停止应用: npm run pm2:stop"
+
+
+pm2 logs test-bot
