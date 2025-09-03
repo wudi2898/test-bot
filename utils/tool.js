@@ -9,7 +9,7 @@ export function decodeBase64(base64) {
 }
 
 // 示例
-const arr = [0, 190, "tgdana1", "Full", 3, Date.now()];
+const arr = [0, 190, "molly", "Full", 3, Date.now()];
 const encoded = encodeBase64(arr);
 console.log("加密后:", encoded);
 
