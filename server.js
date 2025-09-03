@@ -124,7 +124,7 @@ app.get("/", async (req, res) => {
         // 转账金额
         amount: transaction.in_msg.value.toString(),
         // 操作码
-        opCode: transaction.in_msg.op_code.toString(16),
+        opCode: transaction.in_msg.op_code?.toString(16),
         // 时间戳
         timestamp: transaction.utime * 1000,
       };
