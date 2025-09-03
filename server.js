@@ -139,8 +139,8 @@ app.get("/", async (req, res) => {
     });
 
     console.log("=========================");
-    console.log("NFT历史事件数量:", nftHistory.length);
-    console.log("交易记录数量:", transactions.length);
+    console.log("NFT历史事件数量:", nftHistory);
+    console.log("交易记录数量:", transactions);
     console.log("=========================");
 
     // 渲染页面，传递数据
