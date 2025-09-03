@@ -127,12 +127,8 @@ app.get("/", async (req, res) => {
   //       timestamp: transaction.utime * 1000,
   //     };
   //   });
-  const eventsRes = await fetch(
-    `${process.env.TONAPI_URL}/v2/blockchain/account/${nftItemAddr}/events?limit=100`
-  );
-  const eventsJson = await eventsRes.json();
+
   console.log("=========================");
-  console.log("eventsJson", JSON.stringify(eventsJson, null, 2));
   // console.log("transactionsJson", JSON.stringify(transactionsJson, null, 2));
   console.log("historyJson", JSON.stringify(historyJson, null, 2));
   console.log("result", result);
