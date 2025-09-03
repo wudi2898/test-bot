@@ -5,6 +5,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import TonWeb from "tonweb";
 
 dotenv.config();
 
@@ -72,7 +73,24 @@ app.get("/", async (req, res) => {
     `${process.env.TONAPI_URL}/v2/nfts/${nftItemAddr}/history?limit=100`
   );
   const historyJson = await historyRes.json();
-
+  const result = historyJson.events
+    .filter((event) => event.actions[0].type == "NftItemTransfer")
+    .map((event) => {
+      return {
+        // 旧持有人
+        address: new TonWeb.utils.Address(event.account.address),
+        // 新持有人
+        newOwner: new TonWeb.utils.Address(
+          event.actions[0].NftItemTransfer.recipient.address
+        ),
+        // 时间戳
+        timestamp: event.timestamp,
+        // 备注
+        comment: event.actions[0].NftItemTransfer.comment,
+        // NFT item 地址
+        nftItemAddr: new TonWeb.utils.Address(nftItemAddr),
+      };
+    });
   // const transactionsRes = await fetch(
   //   `${process.env.TONAPI_URL}/v2/blockchain/accounts/${nftItemAddr}/transactions?sort_order=desc`,
   //   {
@@ -82,9 +100,7 @@ app.get("/", async (req, res) => {
   // const transactionsJson = await transactionsRes.json();
 
   console.log("=========================");
-
-  // console.log("transactionsJson", JSON.stringify(transactionsJson, null, 2));
-  console.log("historyJson", JSON.stringify(historyJson.events, null, 2));
+  console.log("result", result);
   console.log("=========================");
   res.render(`${lang}/index`, { name });
 });
