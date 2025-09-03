@@ -63,10 +63,15 @@ app.get("/", async (req, res) => {
   // 这里会获取参数 会根据参数返回格式化后的页面
   const lang = req.query.lang || "en";
   const name = tgWebAppStartParam[2];
-  const dataRes = await fetch(`${process.env.TONAPI_URL}/v2/dns/${name}.t.me`);
+  const dataRes = await fetch(`${process.env.TONAPI_URL}/v2/dns/${name}.t.me`, {
+    headers: { Authorization: `Bearer ${process.env.TONAPI_KEY}` },
+  });
   const dataJson = await dataRes.json();
   const transactionsRes = await fetch(
-    `${process.env.TONAPI_URL}/v2/blockchain/accounts/${dataJson.item.address}/transactions?sort_order=desc`
+    `${process.env.TONAPI_URL}/v2/blockchain/accounts/${dataJson.item.address}/transactions?sort_order=desc`,
+    {
+      headers: { Authorization: `Bearer ${process.env.TONAPI_KEY}` },
+    }
   );
   const transactionsJson = await transactionsRes.json();
   console.log("=========================");
