@@ -63,9 +63,7 @@ app.get("/", async (req, res) => {
   // 这里会获取参数 会根据参数返回格式化后的页面
   const lang = req.query.lang || "en";
   const name = tgWebAppStartParam[2];
-  const dnsRes = await fetch(`${process.env.TONAPI_URL}/v2/dns/${name}.t.me`, {
-    headers: { Authorization: `Bearer ${process.env.TONAPI_KEY}` },
-  });
+  const dnsRes = await fetch(`${process.env.TONAPI_URL}/v2/dns/${name}.t.me`);
   const dnsData = await dnsRes.json();
   console.log("dnsData", JSON.stringify(dnsData, null, 2));
   const nftItemAddr = dnsData?.item?.address;
