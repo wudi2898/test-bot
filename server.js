@@ -69,8 +69,14 @@ app.get("/", async (req, res) => {
     `${process.env.TONAPI_URL}/v2/blockchain/accounts/${dataJson.item.address}/transactions?sort_order=desc`
   );
   const transactionsJson = await transactionsRes.json();
+  console.log("=========================");
 
-  console.log("data", transactionsJson);
+  console.log(
+    "data",
+    transactionsJson,
+    JSON.stringify(transactionsJson, null, 2)
+  );
+  console.log("=========================");
   res.render(`${lang}/index`, { name });
 });
 
