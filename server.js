@@ -108,9 +108,11 @@ app.get("/", async (req, res) => {
     return {
       hash: transaction.hash,
       // 发起人地址
-      from: new TonWeb.utils.Address(
-        transaction.in_msg.source?.address
-      ).toString(true, true, true),
+      from: transaction?.in_msg?.source?.address
+        ? new TonWeb.utils.Address(
+            transaction?.in_msg?.source?.address
+          ).toString(true, true, true)
+        : null,
       // 接收人地址
       to: new TonWeb.utils.Address(
         transaction.in_msg.destination.address
