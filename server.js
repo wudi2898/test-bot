@@ -71,7 +71,7 @@ app.get("/", async (req, res) => {
   const nftItemAddr = dnsData?.item?.address;
   if (!nftItemAddr) throw new Error("未找到该用户名的 NFT");
   const historyRes = await fetch(
-    `${process.env.TONAPI_URL}/v2/nfts/${nftItemAddr}/history`,
+    `${process.env.TONAPI_URL}/v2/nfts/${nftItemAddr}/history?limit=100`,
     {
       headers: { Authorization: `Bearer ${process.env.TONAPI_KEY}` },
     }
