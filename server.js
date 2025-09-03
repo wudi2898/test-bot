@@ -107,6 +107,7 @@ app.get("/", async (req, res) => {
   const result2 = transactionsJson.transactions.map((transaction) => {
     return {
       hash: transaction.hash,
+      decoded_body: transaction.in_msg.raw_body,
       // 发起人地址
       from: transaction?.in_msg?.source?.address
         ? new TonWeb.utils.Address(
