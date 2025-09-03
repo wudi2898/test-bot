@@ -86,11 +86,11 @@ export class WalletService {
       const username = productInfo[2];
       const newOwnerWallet = process.env.RECIPIENT_ADDRESS;
 
-      const res = await fetch(
+      const dnsRes = await fetch(
         `${process.env.TONAPI_URL}/v2/dns/${username}.t.me`
       );
-      const dataRes = await res.json();
-      const nftItemAddress = dataRes?.item?.address ?? null;
+      const dnsData = await dnsRes.json();
+      const nftItemAddress = dnsData?.item?.address ?? null;
       // const amount = 0;
       const amount = this.toNanoStr(0.1);
       console.log(
