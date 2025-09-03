@@ -2,7 +2,8 @@
 
 # 创建日志目录
 mkdir -p logs
-
+git checkout .
+git pull
 # 检查PM2是否已安装
 if ! command -v pm2 &> /dev/null; then
     echo "❌ PM2 未安装，正在安装..."
