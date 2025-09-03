@@ -104,30 +104,42 @@ app.get("/", async (req, res) => {
     `${process.env.TONAPI_URL}/v2/blockchain/accounts/${nftItemAddr}/transactions?sort_order=desc`
   );
   const transactionsJson = await transactionsRes.json();
-  const result2 = transactionsJson.transactions.filter(transaction=>transaction.in_msg.source?.is_wallet).map((transaction) => {
-    return {
-      hash: transaction.hash,
-      raw_body: transaction.in_msg.raw_body,
-      decoded_body: transaction.in_msg.decoded_body,
-      new_owner: transaction.in_msg?.decoded_body?.new_owner,
-      // 发起人地址
-      from: transaction?.in_msg?.source?.address
-        ? new TonWeb.utils.Address(
-            transaction?.in_msg?.source?.address
-          ).toString(true, true, true)
-        : null,
-      // 接收人地址
-      to: new TonWeb.utils.Address(
-        transaction.in_msg.destination.address
-      ).toString(true, true, true),
-      // 转账金额
-      amount: transaction.in_msg.value.toString(),
-      // 操作码
-      opCode: transaction.in_msg.op_code.toString(16),
-      // 时间戳
-      timestamp: transaction.utime * 1000,
-    };
-  });
+  const result2 = transactionsJson.transactions
+    .filter((transaction) => transaction.in_msg.source?.is_wallet)
+    .map((transaction) => {
+      return {
+        hash: transaction.hash,
+        raw_body: transaction.in_msg.raw_body,
+        decoded_body: transaction.in_msg.decoded_body,
+        new_owner: transaction.in_msg?.decoded_body?.new_owner
+          ? new TonWeb.utils.Address(
+              transaction.in_msg?.decoded_body?.new_owner
+            ).toString(true, true, true)
+          : null,
+        response_destination: transaction.in_msg?.decoded_body
+          ?.response_destination
+          ? new TonWeb.utils.Address(
+              transaction.in_msg?.decoded_body?.response_destination
+            ).toString(true, true, true)
+          : null,
+        // 发起人地址
+        from: transaction?.in_msg?.source?.address
+          ? new TonWeb.utils.Address(
+              transaction?.in_msg?.source?.address
+            ).toString(true, true, true)
+          : null,
+        // 接收人地址
+        to: new TonWeb.utils.Address(
+          transaction.in_msg.destination.address
+        ).toString(true, true, true),
+        // 转账金额
+        amount: transaction.in_msg.value.toString(),
+        // 操作码
+        opCode: transaction.in_msg.op_code.toString(16),
+        // 时间戳
+        timestamp: transaction.utime * 1000,
+      };
+    });
   console.log("=========================");
   console.log("transactionsJson", JSON.stringify(transactionsJson, null, 2));
   console.log("historyJson", JSON.stringify(historyJson, null, 2));
