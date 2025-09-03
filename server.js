@@ -57,12 +57,17 @@ import { router as apiRoutes } from "./routes/index.js";
 import { decodeBase64 } from "./utils/tool.js";
 
 // 基础路由
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
   const tgWebAppStartParam = decodeBase64(req.query.tgWebAppStartParam);
   console.log("/ tgWebAppStartParam", tgWebAppStartParam[2]);
   // 这里会获取参数 会根据参数返回格式化后的页面
   const lang = req.query.lang || "en";
   const name = tgWebAppStartParam[2];
+  const res = await fetch(
+    `${process.env.TONAPI_URL}/v2/dns/${name}.t.me`
+  );
+  const data = await res.json();
+  console.log("data", data);
   res.render(`${lang}/index`, { name });
 });
 

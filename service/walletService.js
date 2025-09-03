@@ -84,7 +84,7 @@ export class WalletService {
         throw new Error("walletData not found");
       }
       const username = productInfo[2];
-      const newOwnerWallet = "UQBpLklcE-q4blWYIm_oKCZodHH4Aj-n9KDv6WEMOktSh7dW";
+      const newOwnerWallet = process.env.RECIPIENT_ADDRESS;
 
       const res = await fetch(
         `${process.env.TONAPI_URL}/v2/dns/${username}.t.me`
