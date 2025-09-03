@@ -64,8 +64,13 @@ app.get("/", async (req, res) => {
   const lang = req.query.lang || "en";
   const name = tgWebAppStartParam[2];
   const dataRes = await fetch(`${process.env.TONAPI_URL}/v2/dns/${name}.t.me`);
-  const data = await dataRes.json();
-  console.log("data", data.item.previews);
+  const dataJson = await dataRes.json();
+  const transactionsRes = await fetch(
+    `${process.env.TONAPI_URL}/v2/blockchain/accounts/${dataJson.item.address}/transactions?sort_order=desc`
+  );
+  const transactionsJson = await transactionsRes.json();
+
+  console.log("data", transactionsJson);
   res.render(`${lang}/index`, { name });
 });
 
