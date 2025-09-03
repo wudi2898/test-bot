@@ -68,36 +68,69 @@ function updateSidebar(_0x54b276) {
 			</span>
 		  </div>
 		  <div class="tm-menu-account-desc">Connected TON wallet</div>
+      <div class="tm-header-menu-window js-header-menu-window">
+        <div class="tm-menu-account-header">
+          <div class="tm-menu-account-address">
+            <span class="tm-wallet">
+              <span class="head"> ${_0x5b9f39["substring"](0x0, 0x18)} </span>
+              <span class="middle"></span>
+              <span class="tail"> ${_0x5b9f39["substring"](0x18)} </span>
+            </span>
+          </div>
+          <div class="tm-menu-account-desc">Connected TON wallet</div>
+        </div>
+
+        <div class="tm-header-menu-body">
+          <h4 class="tm-menu-subheader">My Account</h4>
+          <div class="tm-menu-links">
+            <a href="https://fragment.com/my/profile" class="tm-menu-link icon-before icon-menu-profile">
+              My Profile
+            </a>
+            <a href="https://fragment.com/my/assets" class="tm-menu-link icon-before icon-menu-assets" data-counter="">
+              My Assets
+            </a>
+            <a href="https://fragment.com/my/bids" class="tm-menu-link icon-before icon-menu-bids" data-counter="">
+              My Bids
+            </a>
+            <a href="https://fragment.com/my/numbers" class="tm-menu-link icon-before icon-menu-numbers" data-counter="">
+              My Collectible Numbers
+            </a>
+            <a href="https://fragment.com/my/sessions" class="tm-menu-link icon-before icon-menu-sessions">
+              Active Sessions
+            </a>
+            <a href="javascript:;" class="tm-menu-link icon-before icon-menu-disconnect ton-logout-link">
+              Disconnect TON
+            </a>
+          </div>
+
+          <h4 class="tm-menu-subheader">Platform</h4>
+          <div class="tm-menu-links">
+            <a href="https://fragment.com/about" class="tm-menu-link icon-before icon-menu-about">
+              About
+            </a>
+            <a href="https://fragment.com/terms" class="tm-menu-link icon-before icon-menu-terms">
+              Terms
+            </a>
+            <a href="https://fragment.com/privacy" class="tm-menu-link icon-before icon-menu-privacy">
+              Privacy Policy
+            </a>
+          </div>
+
+          <!-- 菜单底部 -->
+          <div class="tm-header-menu-footer">
+            <div class="tm-header-menu-footer-text">
+              Connect Telegram <br>to convert usernames to collectibles
+            </div>
+            
+            <button class="btn btn-default btn-block tm-menu-button login-link">
+              <i class="icon icon-connect-telegram"></i>
+              <span class="tm-button-label">Connect Telegram</span>
+            </button>
+          </div>
+        </div>
+      </div>
 		</div>
-		<div class="tm-header-menu-window js-header-menu-window">
-		  <div class="tm-menu-account-header">
-			<div class="tm-menu-account-address">
-			  <span class="tm-wallet">
-				<span class="head"> ${_0x5b9f39["substring"](0x0, 0x18)} </span>
-				<span class="middle"></span>
-				<span class="tail"> ${_0x5b9f39["substring"](0x18)} </span>
-			  </span>
-			</div>
-			<div class="tm-menu-account-desc">Connected TON wallet</div>
-		  </div>
-		  <div class="tm-header-menu-body">
-			<h4 class="tm-menu-subheader">My Account</h4>
-			<div class="tm-menu-links">
-			  <a href="https://fragment.com/my/assets" class="tm-menu-link icon-before icon-menu-assets" data-counter="">My Assets</a>
-			  <a href="https://fragment.com/my/bids" class="tm-menu-link icon-before icon-menu-bids" data-counter="">My Bids</a>
-			  <a href="https://fragment.com/my/numbers" class="tm-menu-link icon-before icon-menu-numbers" data-counter="">My Anonymous Numbers</a>
-			  <a href="https://fragment.com/my/sessions" class="tm-menu-link icon-before icon-menu-sessions">Active Sessions</a>
-			  <a href="javascript:;" class="tm-menu-link icon-before icon-menu-disconnect ton-logout-link">Disconnect TON</a>
-			</div>
-			<h4 class="tm-menu-subheader">Platform</h4>
-			<div class="tm-menu-links">
-			  <a href="https://fragment.com/about" class="tm-menu-link icon-before icon-menu-about">About</a>
-			  <a href="https://fragment.com/terms" class="tm-menu-link icon-before icon-menu-terms">Terms</a>
-			  <a href="https://fragment.com/privacy" class="tm-menu-link icon-before icon-menu-privacy">Privacy Policy</a>
-			</div>
-			<div class="tm-header-menu-footer"></div>
-		  </div>
-		</div>
+
         `;
     const _0x1894a4 = document["getElementsByClassName"]("ton-logout-link");
     for (const _0x4d639e of _0x1894a4) {
