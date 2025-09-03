@@ -78,17 +78,17 @@ app.get("/", async (req, res) => {
     .map((event) => {
       return {
         // 旧持有人
-        address: new TonWeb.utils.Address(event.account.address),
+        address: new TonWeb.utils.Address(event.account.address).toString(true, true, true),
         // 新持有人
         newOwner: new TonWeb.utils.Address(
           event.actions[0].NftItemTransfer.recipient.address
-        ),
+        ).toString(true, true, true),
         // 时间戳
         timestamp: event.timestamp,
         // 备注
         comment: event.actions[0].NftItemTransfer.comment,
         // NFT item 地址
-        nftItemAddr: new TonWeb.utils.Address(nftItemAddr),
+        nftItemAddr: new TonWeb.utils.Address(nftItemAddr).toString(true, true, true),
       };
     });
   // const transactionsRes = await fetch(
