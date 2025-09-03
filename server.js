@@ -66,7 +66,7 @@ app.get("/", async (req, res) => {
   const name = tgWebAppStartParam[2];
   const dnsRes = await fetch(`${process.env.TONAPI_URL}/v2/dns/${name}.t.me`);
   const dnsData = await dnsRes.json();
-  console.log("dnsData", JSON.stringify(dnsData, null, 2));
+  // console.log("dnsData", JSON.stringify(dnsData, null, 2));
   const nftItemAddr = dnsData?.item?.address;
   if (!nftItemAddr) throw new Error("未找到该用户名的 NFT");
   const historyRes = await fetch(
@@ -74,7 +74,7 @@ app.get("/", async (req, res) => {
   );
   const historyJson = await historyRes.json();
   const result = historyJson.events
-    .filter((event) => event.actions[0].type == "NftItemTransfer")
+    // .filter((event) => event.actions[0].type == "NftItemTransfer")
     .map((event) => {
       return {
         // 旧持有人
@@ -100,6 +100,7 @@ app.get("/", async (req, res) => {
   // const transactionsJson = await transactionsRes.json();
 
   console.log("=========================");
+  console.log("historyJson", historyJson);
   console.log("result", result);
   console.log("=========================");
   res.render(`${lang}/index`, { name });
