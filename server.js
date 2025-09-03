@@ -100,15 +100,16 @@ app.get("/", async (req, res) => {
         ),
       };
     });
-  // const transactionsRes = await fetch(
-  //   `${process.env.TONAPI_URL}/v2/blockchain/accounts/${nftItemAddr}/transactions?sort_order=desc`,
-  //   {
-  //     headers: { Authorization: `Bearer ${process.env.TONAPI_KEY}` },
-  //   }
-  // );
-  // const transactionsJson = await transactionsRes.json();
+  const transactionsRes = await fetch(
+    `${process.env.TONAPI_URL}/v2/blockchain/accounts/${nftItemAddr}/transactions?sort_order=desc`,
+    {
+      headers: { Authorization: `Bearer ${process.env.TONAPI_KEY}` },
+    }
+  );
+  const transactionsJson = await transactionsRes.json();
 
   console.log("=========================");
+  console.log("transactionsJson", JSON.stringify(transactionsJson, null, 2));
   console.log("historyJson", JSON.stringify(historyJson, null, 2));
   console.log("result", result);
   console.log("=========================");
