@@ -23,7 +23,7 @@ pm2 delete test-bot 2>/dev/null || echo "没有需要删除的 test-bot 应用"
 
 # 启动应用
 echo "🚀 启动 test-bot 应用..."
-pm2 start ecosystem.config.js --env production
+pm2 start ecosystem.config.cjs --env production
 
 # 显示状态
 echo "📊 应用状态："
