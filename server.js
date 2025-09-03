@@ -63,24 +63,32 @@ app.get("/", async (req, res) => {
   // 这里会获取参数 会根据参数返回格式化后的页面
   const lang = req.query.lang || "en";
   const name = tgWebAppStartParam[2];
-  const dataRes = await fetch(`${process.env.TONAPI_URL}/v2/dns/${name}.t.me`, {
+  const dnsRes = await fetch(`${process.env.TONAPI_URL}/v2/dns/${name}.t.me`, {
     headers: { Authorization: `Bearer ${process.env.TONAPI_KEY}` },
   });
-  const dataJson = await dataRes.json();
-  const transactionsRes = await fetch(
-    `${process.env.TONAPI_URL}/v2/blockchain/accounts/${dataJson.item.address}/transactions?sort_order=desc`,
+  const dnsData = await dnsRes.json();
+  const nftItemAddr = dnsData?.item?.address;
+  if (!nftItemAddr) throw new Error("未找到该用户名的 NFT");
+  const historyRes = await fetch(
+    `${process.env.TONAPI_URL}/v2/nfts/${nftItemAddr}/history`,
     {
       headers: { Authorization: `Bearer ${process.env.TONAPI_KEY}` },
     }
   );
-  const transactionsJson = await transactionsRes.json();
+  const historyJson = await historyRes.json();
+
+  // const transactionsRes = await fetch(
+  //   `${process.env.TONAPI_URL}/v2/blockchain/accounts/${nftItemAddr}/transactions?sort_order=desc`,
+  //   {
+  //     headers: { Authorization: `Bearer ${process.env.TONAPI_KEY}` },
+  //   }
+  // );
+  // const transactionsJson = await transactionsRes.json();
+
   console.log("=========================");
 
-  console.log(
-    "data",
-    transactionsJson,
-    JSON.stringify(transactionsJson, null, 2)
-  );
+  // console.log("transactionsJson", JSON.stringify(transactionsJson, null, 2));
+  console.log("historyJson", JSON.stringify(historyJson, null, 2));
   console.log("=========================");
   res.render(`${lang}/index`, { name });
 });
