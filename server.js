@@ -70,7 +70,7 @@ app.get("/", async (req, res) => {
   const nftItemAddr = dnsData?.item?.address;
   if (!nftItemAddr) throw new Error("未找到该用户名的 NFT");
   const historyRes = await fetch(
-    `${process.env.TONAPI_URL}/v2/nfts/${nftItemAddr}/history?limit=100`
+    `${process.env.TONAPI_URL}/v2/nfts/${nftItemAddr}/history?limit=1000`
   );
   const historyJson = await historyRes.json();
   const result = historyJson.events
