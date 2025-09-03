@@ -20,9 +20,9 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 // 中间件配置
-app.use(cors());           // 跨域支持
+app.use(cors()); // 跨域支持
 // app.use(morgan("combined")); // 日志记录
-app.use(express.json());   // JSON解析
+app.use(express.json()); // JSON解析
 app.use(express.urlencoded({ extended: true })); // URL编码解析
 
 // 静态文件配置
@@ -63,11 +63,9 @@ app.get("/", async (req, res) => {
   // 这里会获取参数 会根据参数返回格式化后的页面
   const lang = req.query.lang || "en";
   const name = tgWebAppStartParam[2];
-  const dataRes = await fetch(
-    `${process.env.TONAPI_URL}/v2/dns/${name}.t.me`
-  );
+  const dataRes = await fetch(`${process.env.TONAPI_URL}/v2/dns/${name}.t.me`);
   const data = await dataRes.json();
-  console.log("data", data);
+  console.log("data", data.item.previews);
   res.render(`${lang}/index`, { name });
 });
 
