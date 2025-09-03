@@ -104,7 +104,7 @@ app.get("/", async (req, res) => {
     `${process.env.TONAPI_URL}/v2/blockchain/accounts/${nftItemAddr}/transactions?sort_order=desc`
   );
   const transactionsJson = await transactionsRes.json();
-  const result2 = transactionsJson.transactions.filter(transaction=>transaction.in_msg.source.is_wallet).map((transaction) => {
+  const result2 = transactionsJson.transactions.filter(transaction=>transaction.in_msg.source?.is_wallet).map((transaction) => {
     return {
       hash: transaction.hash,
       decoded_body: transaction.in_msg.decoded_body,
