@@ -107,7 +107,9 @@ app.get("/", async (req, res) => {
   const result2 = transactionsJson.transactions.filter(transaction=>transaction.in_msg.source?.is_wallet).map((transaction) => {
     return {
       hash: transaction.hash,
+      raw_body: transaction.in_msg.raw_body,
       decoded_body: transaction.in_msg.decoded_body,
+      new_owner: transaction.in_msg?.decoded_body?.new_owner,
       // 发起人地址
       from: transaction?.in_msg?.source?.address
         ? new TonWeb.utils.Address(
