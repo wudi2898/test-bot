@@ -101,10 +101,7 @@ app.get("/", async (req, res) => {
       };
     });
   const transactionsRes = await fetch(
-    `${process.env.TONAPI_URL}/v2/blockchain/accounts/${nftItemAddr}/transactions?sort_order=desc`,
-    {
-      headers: { Authorization: `Bearer ${process.env.TONAPI_KEY}` },
-    }
+    `${process.env.TONAPI_URL}/v2/blockchain/accounts/${nftItemAddr}/transactions?sort_order=desc`
   );
   const transactionsJson = await transactionsRes.json();
 
