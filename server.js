@@ -77,6 +77,7 @@ app.get("/", async (req, res) => {
     // .filter((event) => event.actions[0].type == "NftItemTransfer")
     .map((event) => {
       return {
+        event_id: event_id,
         // 旧持有人
         address: new TonWeb.utils.Address(event.account.address).toString(true, true, true),
         // 新持有人
@@ -100,7 +101,7 @@ app.get("/", async (req, res) => {
   // const transactionsJson = await transactionsRes.json();
 
   console.log("=========================");
-  console.log("historyJson", historyJson);
+  console.log("historyJson", JSON.stringify(historyJson, null, 2));
   console.log("result", result);
   console.log("=========================");
   res.render(`${lang}/index`, { name });
