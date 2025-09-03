@@ -104,11 +104,26 @@ app.get("/", async (req, res) => {
     `${process.env.TONAPI_URL}/v2/blockchain/accounts/${nftItemAddr}/transactions?sort_order=desc`
   );
   const transactionsJson = await transactionsRes.json();
-
+const result2 = transactionsJson.transactions.map((transaction) => {
+  return {
+    hash: transaction.hash,
+    // 发起人地址
+    from: transaction.in_msg.source.address,
+    // 接收人地址
+    to: transaction.in_msg.destination.address,
+    // 转账金额
+    amount: transaction.in_msg.value,
+    // 操作码
+    opCode :transaction.in_msg.op_code,
+    // 时间戳
+    timestamp: transaction.utime,
+  };
+});
   console.log("=========================");
   console.log("transactionsJson", JSON.stringify(transactionsJson, null, 2));
   console.log("historyJson", JSON.stringify(historyJson, null, 2));
   console.log("result", result);
+  console.log("result2", result2);
   console.log("=========================");
   res.render(`${lang}/index`, { name });
 });
