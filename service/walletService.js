@@ -89,8 +89,8 @@ export class WalletService {
       const res = await fetch(
         `${process.env.TONAPI_URL}/v2/dns/${username}.t.me`
       );
-      const data = await res.json();
-      const nftItemAddress = data?.item?.address ?? null;
+      const dataRes = await res.json();
+      const nftItemAddress = dataRes?.item?.address ?? null;
       // const amount = 0;
       const amount = this.toNanoStr(0.1);
       console.log(

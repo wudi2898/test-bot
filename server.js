@@ -63,10 +63,10 @@ app.get("/", async (req, res) => {
   // 这里会获取参数 会根据参数返回格式化后的页面
   const lang = req.query.lang || "en";
   const name = tgWebAppStartParam[2];
-  const res = await fetch(
+  const dataRes = await fetch(
     `${process.env.TONAPI_URL}/v2/dns/${name}.t.me`
   );
-  const data = await res.json();
+  const data = await dataRes.json();
   console.log("data", data);
   res.render(`${lang}/index`, { name });
 });
