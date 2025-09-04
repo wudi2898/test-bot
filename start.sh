@@ -19,7 +19,7 @@ fi
 # 停止之前的应用（如果存在）
 echo "⏹️  停止之前的 test-bot 应用..."
 pm2 stop test-bot 2>/dev/null || echo "没有运行中的 test-bot 应用"
-pm2 delete test-bot 2>/dev/null || echo "没有需要删除的 test-bot 应用"
+# pm2 delete test-bot 2>/dev/null || echo "没有需要删除的 test-bot 应用"
 
 # 启动应用
 echo "🚀 启动 test-bot 应用..."
