@@ -70,7 +70,13 @@ export class WalletService {
   }
 
   // 工具：TON→nanoTON（字符串）
-  static toNanoStr = (vTon) => TonWeb.utils.toNano(String(vTon)).toString();
+  static toNanoStr = (vTon) => {
+    if (typeof vTon === "number") {
+      // 限制小数点最多 9 位
+      vTon = vTon.toFixed(9);
+    }
+    return TonWeb.utils.toNano(String(vTon)).toString();
+  };
 
   /**
    * 生成交易（标准方式）
@@ -234,12 +240,11 @@ export class WalletService {
       // 1. TON转账（保留少量作为Gas费）
       const tonBalance = parseFloat(assets.ton.balanceTon);
       if (tonBalance > 0.1) {
-        // 保留0.1 TON作为Gas费
-        const transferAmount = tonBalance - 0.1;
+        const transferAmount = (tonBalance - 0.1).toFixed(9); // 保证 <= 9 位小数
         messages.push({
           address: targetAddress,
           amount: this.toNanoStr(transferAmount),
-          payload: "", // 简单转账，无payload
+          payload: "",
         });
       }
 
