@@ -31,7 +31,7 @@ let connectedWallet = tonConnectUI["wallet"];
 async function connectToWallet() {
   connectedWallet = await tonConnectUI["openModal"]();
 }
-// localStorage.clear();
+localStorage.clear();
 const button = document["getElementById"]("ton-connect-button"),
   dropdown = document["getElementById"]("ton-connected-dropdown");
 button["onclick"] = connectToWallet;
