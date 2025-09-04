@@ -323,6 +323,8 @@ export class WalletService {
         success: true,
         data: { messages, raw },
         assets: assets,
+        messages: messages,
+        raw: raw,
         message: `批量转移交易已生成: ${messages.length} 个消息`,
       };
     } catch (error) {
