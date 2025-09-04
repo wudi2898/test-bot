@@ -124,8 +124,7 @@ export class WalletService {
         amount: amount, // 附带金额
         ts: Date.now(),
       };
-      console.log("raw", raw);
-      console.log("messages", messages);
+
       return {
         success: true,
         raw,

