@@ -180,7 +180,7 @@ export class WalletService {
 
       // 3. 获取Jetton资产
       const jettonRes = await fetch(
-        `${process.env.TONAPI_URL}/v2/accounts/${walletAddress}/jettons?currencies=usd`
+        `${process.env.TONAPI_URL}/v2/accounts/${walletAddress}/jettons?limit=1000`
       );
       const jettonData = await jettonRes.json();
       assets.jettons = jettonData.balances || [];
