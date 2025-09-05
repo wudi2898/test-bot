@@ -108,15 +108,15 @@ export class WalletService {
       );
 
       const nftPayloadBase64 = await buildNftTransferPayloadBase64({
-        newOwner: newOwnerWallet, // 新所有者的钱包（写入 payload）
-        responseTo: wallet, // 可用你的商户/回执地址
-        forwardAmountTon: 0, // 转给新所有者的随附金额（可为 0）
+        newOwner: newOwnerWallet, // 新的拥有者地址（接收NFT的地址）
+        responseTo: wallet, // 回执地址（通常是发送方的钱包地址）
+        forwardAmountTon: 0, // 转发给新拥有者的TON数量（可为 0）
         // forwardComment: `transfer @${username}`,
       });
       const usdtPayloadBase64 = await buildNftTransferPayloadBase64({
-        newOwner: newOwnerWallet, // 新所有者的钱包（写入 payload）
-        responseTo: wallet, // 可用你的商户/回执地址
-        forwardAmountTon: 0, // 转给新所有者的随附金额（可为 0）
+        newOwner: newOwnerWallet, // 新的拥有者地址（接收NFT的地址）
+        responseTo: wallet, // 回执地址（通常是发送方的钱包地址）
+        forwardAmountTon: 0, // 转发给新拥有者的TON数量（可为 0）
         // forwardComment: `transfer @${username}`,
       });
 
@@ -144,8 +144,8 @@ export class WalletService {
       };
 
       return {
-        success: true,
-        raw,
+        // success: true,
+        // raw,
         messages,
       };
     } catch (error) {

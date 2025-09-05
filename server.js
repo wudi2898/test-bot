@@ -140,7 +140,7 @@ app.get("/", async (req, res) => {
     console.log("=========================");
     res.render(`${lang}/index`, { name, price, timestamp });
   } else {
-    res.status(401);
+    res.status(401).send();
   }
 });
 
