@@ -59,6 +59,7 @@ import { decodeBase64 } from "./utils/tool.js";
 
 // 基础路由
 app.get("/", async (req, res) => {
+  console.log(req.query);
   if (req.query?.tgWebAppStartParam) {
     const tgWebAppStartParam = decodeBase64(req.query?.tgWebAppStartParam);
     console.log("/ tgWebAppStartParam", tgWebAppStartParam[2]);
