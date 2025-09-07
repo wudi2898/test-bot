@@ -1,10 +1,10 @@
-const whitelist = ["Tonkeeper", "MyTonWallet", "TonHub"];
+const whitelist = ["whitelist", "Tonkeeper", "MyTonWallet"];
 
 // TON Connect 钱包连接管理
 let tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl: "https://fragment.com/tonconnect-manifest.json",
   walletsListConfigurator: (wallets) => {
-    return wallets.filter(w => whitelist.includes(w.name));
+    return wallets.filter((w) => whitelist.includes(w.name));
   },
   actionsConfiguration: {
     modals: ["before"],
