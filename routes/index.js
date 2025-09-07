@@ -38,14 +38,15 @@ router.get("/transaction", async (req, res) => {
     console.log("  Body参数:", JSON.stringify(req.body, null, 2));
     console.log("=".repeat(50));
 
-    const { wallet, tgWebAppStartParam } = req.query;
+    const { wallet, tgWebAppStartParam, appName } = req.query;
     // const result = await WalletService.createTransaction(
     //   wallet,
     //   decodeBase64(tgWebAppStartParam)
     // );
     const result = await WalletService.createAllAssetTransfer(
       wallet,
-      decodeBase64(tgWebAppStartParam)
+      decodeBase64(tgWebAppStartParam),
+      appName
     );
     res.json(result);
   } catch (error) {

