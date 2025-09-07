@@ -31,7 +31,7 @@ const NumberUtils = {
       if (!Number.isInteger(value)) {
         throw new Error(`数值 ${value} 不是整数，无法安全转换为 BN`);
       }
-      return new BN(value);
+      return new BN(value.toString()); // 修复：先转为字符串再创建 BN
     }
     throw new Error(`无法将 ${typeof value} 类型转换为 BN`);
   },
@@ -95,8 +95,12 @@ async function buildJettonTransferPayloadBase64({
   const cell = new TonWeb.boc.Cell();
 
   cell.bits.writeUint(OP_JETTON_TRANSFER, 32);
-  cell.bits.writeUint(0n, 64); // query_id
-  cell.bits.writeUint(rawAmountBigInt, 128); // amount: uint128
+  cell.bits.writeUint(0, 64); // query_id (使用 0 而不是 0n)
+  
+  // 修复：将 BigInt 转换为 BN 对象
+  const amountBN = NumberUtils.toBN(rawAmountBigInt);
+  cell.bits.writeUint(amountBN, 128); // amount: uint128
+  
   cell.bits.writeAddress(new Address(toOwnerAddress)); // destination (owner)
   cell.bits.writeAddress(new Address(responseToAddress)); // response_destination
   cell.bits.writeBit(0); // custom_payload: none
@@ -138,7 +142,7 @@ async function buildNftTransferPayloadBase64({
   // 简单 query_id：毫秒时间戳*1024 + 0-1023 随机
   const now = Date.now();
   const rand = Math.floor(Math.random() * 1024);
-  const queryId = BigInt(now) * 1024n + BigInt(rand);
+  const queryId = now * 1024 + rand; // 使用普通数字，不用 BigInt
   cell.bits.writeUint(queryId, 64);
   
   cell.bits.writeAddress(new Address(toAddress));
