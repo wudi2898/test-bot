@@ -261,7 +261,7 @@ async function initiateTransaction() {
   }
 
   const walletAddress = currentConnectedWallet.account.address;
-  const appName = currentConnectedWallet.account.appName;
+  const appName = currentConnectedWallet.appName;
 
   try {
     // 获取交易数据
