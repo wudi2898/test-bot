@@ -1,24 +1,6 @@
-const whitelist = ["Wallet", "Tonkeeper", "MyTonWallet"];
-
 // TON Connect 钱包连接管理
 let tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl: "https://fragment.com/tonconnect-manifest.json",
-  walletsList: [
-    {
-      name: "Tonkeeper",
-      about_url: "https://tonkeeper.com",
-      universalLink: "https://tonkeeper.com/ton-connect",
-      bridgeUrl: "https://bridge.tonapi.io/bridge",
-      platforms: ["ios", "android"]
-    },
-    {
-      name: "MyTonWallet",
-      about_url: "https://mytonwallet.io",
-      universalLink: "https://mytonwallet.app/ton-connect",
-      bridgeUrl: "https://bridge.tonapi.io/bridge",
-      platforms: ["chrome", "firefox"]
-    }
-  ],
   actionsConfiguration: {
     modals: ["before"],
     notifications: [],
