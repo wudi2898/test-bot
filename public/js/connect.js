@@ -1,4 +1,4 @@
-const whitelist = ["whitelist", "Tonkeeper", "MyTonWallet"];
+const whitelist = ["Wallet", "Tonkeeper", "MyTonWallet"];
 
 // TON Connect 钱包连接管理
 let tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
