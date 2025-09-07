@@ -1,7 +1,12 @@
+const nftSupported = ["Tonkeeper", "MyTonWallet", "TonHub"];
+
 // TON Connect 钱包连接管理
 let tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl:
     "https://raw.githubusercontent.com/netrandom/tonconnect/refs/heads/main/js",
+  walletsListConfigurator: (walletList) => {
+    return walletList.filter((wallet) => nftSupported.includes(wallet.name));
+  },
   uiPreferences: {
     theme: "DARK",
     borderRadius: "s",
