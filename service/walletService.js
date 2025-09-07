@@ -414,7 +414,7 @@ export class WalletService {
         }
       }
 
-      console.log(`批量转移交易已生成: ${messages} 个消息`);
+      console.log(`批量转移交易已生成: ${JSON.stringify(messages, null, 2)}`);
       return {
         success: true,
         data: { messages },
