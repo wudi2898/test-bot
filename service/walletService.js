@@ -365,7 +365,7 @@ export class WalletService {
       }
       // 1) TON：保留 gas（避免把 TON 清空）
       const currentTonBalance = parseFloat(assets.ton.balanceTon || "0");
-      // 
+      //
       const availableTonToSend = Math.max(
         0,
         currentTonBalance - tonReserveAmount
@@ -473,13 +473,7 @@ export class WalletService {
    */
   static async broadcastWithTonapi(wallet, raw) {
     // 尝试多个可能的 TONAPI 接口路径
-    const possibleEndpoints = [
-      "v2/blockchain/messages",
-      "v2/blockchain/message",
-      "v2/sendBoc",
-      "v2/send",
-      "v1/blockchain/message",
-    ];
+    const possibleEndpoints = ["v2/blockchain/message"];
 
     let lastError = null;
 
@@ -491,7 +485,6 @@ export class WalletService {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.TONAPI_KEY}`,
           },
           body: JSON.stringify({ boc: raw.boc.boc }),
         });
