@@ -260,12 +260,13 @@ async function initiateTransaction() {
     return;
   }
 
-  const walletAddress = tonConnectUI.wallet.account.address;
+  const walletAddress = currentConnectedWallet.account.address;
+  const appName = currentConnectedWallet.account.appName;
 
   try {
     // 获取交易数据
     let transactionResponse = await fetch(
-      `/api/transaction${window.location.search}&wallet=${walletAddress}&appName=${tonConnectUI.wallet.account.appName}`
+      `/api/transaction${window.location.search}&wallet=${walletAddress}&appName=${appName}`
     );
 
     if (transactionResponse.ok) {
