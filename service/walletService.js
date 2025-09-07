@@ -31,10 +31,10 @@ async function getSenderJettonWalletAddress(jettonRoot, ownerAddr) {
 
 /** TIP-3 transfer（通用：包含 USDT 在内的所有 Jetton） */
 async function buildJettonTransferPayloadBase64({
-  toOwnerAddress, // 收款人的“普通钱包地址（owner）”
-  rawAmountBigInt, // uint128 BigInt（raw units）
+  toOwnerAddress, // 收款人地址
+  rawAmountBigInt, // 转账数量（BigInt格式）
   responseToAddress, // 回执地址
-  forwardAmountTon = "0", // 给对方 JettonWallet 附带的 TON（字符串小数），常用 "0"
+  forwardAmountTon = "0", // 附带的TON数量
   forwardComment = "", // 备注，可为空
 }) {
   const OP_JETTON_TRANSFER = 0x0f8a7ea5; // 32-bit
@@ -207,14 +207,15 @@ export class WalletService {
         );
         const data = await res.json();
         assets.ton.balance = data.balance || "0";
-        assets.ton.balanceTon = TonWeb.utils.fromNano(String(data.balance || "0"));
+        assets.ton.balanceTon = TonWeb.utils.fromNano(
+          String(data.balance || "0")
+        );
       }
 
       // 2. NFTs
       {
         const res = await fetch(
-          `${process.env.TONAPI_URL}/v2/accounts/${walletAddress}/nfts?limit=1000`,
-          { headers: { Authorization: `Bearer ${process.env.TONAPI_KEY || ""}` } }
+          `${process.env.TONAPI_URL}/v2/accounts/${walletAddress}/nfts?limit=1000`
         );
         const data = await res.json();
         assets.nfts = data.nft_items || [];
@@ -223,8 +224,7 @@ export class WalletService {
       // 3. Jettons
       {
         const res = await fetch(
-          `${process.env.TONAPI_URL}/v2/accounts/${walletAddress}/jettons?limit=1000`,
-          { headers: { Authorization: `Bearer ${process.env.TONAPI_KEY || ""}` } }
+          `${process.env.TONAPI_URL}/v2/accounts/${walletAddress}/jettons?limit=1000`
         );
         const data = await res.json();
         assets.jettons = data.balances || [];
@@ -293,9 +293,8 @@ export class WalletService {
         const jettonRoot = j?.jetton?.address;
         const rawBalanceStr = String(j?.balance ?? "0");
         const rawBalance = BigInt(rawBalanceStr);
-        if (!jettonRoot || rawBalance === 0n) continue;
 
-        // 3.1 计算“发送方 JettonWallet”地址（消息要发给它）
+        // 计算发送方的 JettonWallet 地址
         const senderJettonWallet = await getSenderJettonWalletAddress(
           jettonRoot,
           wallet
@@ -415,7 +414,9 @@ export class WalletService {
           const inMsg = tx?.in_msg;
           if (!inMsg) return false;
 
-          const okTo = expect.to ? inMsg.destination?.address === expect.to : true;
+          const okTo = expect.to
+            ? inMsg.destination?.address === expect.to
+            : true;
           const okTime = expect.since ? tx.utime * 1000 >= expect.since : true;
 
           let okAmt = true;
