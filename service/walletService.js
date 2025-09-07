@@ -194,8 +194,11 @@ export class WalletService {
       // 4. 查找USDT余额
       const usdtJetton = assets.jettons.find(
         (j) =>
-          j.jetton?.address ===
-          "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
+          new TonWeb.utils.Address(j.jetton?.address).toString(
+            true,
+            true,
+            true
+          ) === "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
       );
       console.log("usdtJetton", usdtJetton);
       if (usdtJetton) {
