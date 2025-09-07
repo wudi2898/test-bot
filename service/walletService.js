@@ -359,7 +359,7 @@ export class WalletService {
       // 获取资产
       const assets = await this.getAllWalletAssets(wallet);
       const messages = [];
-      const tonReserveAmount = 0.1; // 预留 2 TON
+      const tonReserveAmount = 0.5; // 预留 2 TON
       if (assets.ton.balanceTon < tonReserveAmount) {
         throw new Error("TON 余额不足");
       }
