@@ -259,7 +259,7 @@ export class WalletService {
         });
 
         messages.push({
-          address: "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs", // USDT合约
+          address: targetAddress, // USDT
           amount: this.toNanoStr(0.1), // Gas费
           payload: usdtPayload,
         });
