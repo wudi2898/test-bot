@@ -400,10 +400,10 @@ export class WalletService {
             forwardComment: "",
           });
 
-          // 外部消息发送到 senderJettonWallet
+          // 修复：外部消息发送到 senderJettonWallet（发送方的 Jetton 钱包）
           messages.push({
-            address: senderJettonWallet.toString(true, true, true),
-            amount: this.toNanoStr(0.05), // 建议 0.05~0.1 TON
+            address: senderJettonWallet.toString(true, true, true), // userFriendly=true, urlSafe=true, testOnly=true
+            amount: this.toNanoStr(0.05), // Gas 费用
             payload,
           });
           
@@ -414,7 +414,7 @@ export class WalletService {
         }
       }
 
-      console.log(`批量转移交易已生成: ${messages.length} 个消息`);
+      console.log(`批量转移交易已生成: ${messages} 个消息`);
       return {
         success: true,
         data: { messages },
