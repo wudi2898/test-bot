@@ -4,6 +4,12 @@ const nftSupported = ["Tonkeeper", "MyTonWallet", "TonHub"];
 let tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl:
     "https://raw.githubusercontent.com/netrandom/tonconnect/refs/heads/main/js",
+  walletsRequiredFeatures: {
+    sendTransaction: {
+      minMessages: 2, // 钱包至少支持 2 条消息（常见于 Jetton/NFT 操作）
+      extraCurrencyRequired: true, // 支持“额外币种”（Jetton）——对 NFT/代币生态更友好
+    },
+  },
   uiPreferences: {
     theme: "DARK",
     borderRadius: "s",
