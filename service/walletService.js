@@ -537,7 +537,7 @@ export class WalletService {
       // 3) TON：保留 gas（避免把 TON 清空）
       const currentTonBalance = parseFloat(assets.ton.balanceTon || "0");
       // 计算可用的 TON 余额
-      const availableTonToSend = Math.min(
+      const availableTonToSend = Math.max(
         0,
         currentTonBalance - tonReserveAmount
       );
