@@ -467,7 +467,7 @@ export class WalletService {
 
           messages.push({
             address: nftItem.address, // 目标是 NFT item 合约地址
-            amount: this.convertTonToNanoString(0.05), // 给 item 的 gas
+            amount: this.convertTonToNanoString(0.01), // 给 item 的 gas
             payload: nftTransferPayload,
           });
         }
